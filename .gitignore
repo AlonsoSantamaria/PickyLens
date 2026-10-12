@@ -1,0 +1,12 @@
+/devpost/learner-profile.md
+.env
+.env.*
+!.env.example
+
+.venv/
+__pycache__/
+.pytest_cache/
+data/
+work/
+*.sqlite3
+*.sqlite3-*

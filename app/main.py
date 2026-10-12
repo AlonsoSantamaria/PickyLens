@@ -1,0 +1,79 @@
+import os
+from pathlib import Path
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from app.core.contracts import Action
+from app.storage.repository import Repository, Conflict
+from app.services.interactions import Interactions
+from app.services.scenario import PROMPT, DESCRIPTION
+
+BASE = Path(__file__).parent
+
+
+class UnconfiguredProvider:
+    test_stub = False
+
+    async def generate_structured(self, *args, **kwargs):
+        raise ValueError("Live provider is not enabled in Slice 1. Start the documented development stub runner.")
+
+    async def generate_text(self, *args, **kwargs):
+        raise ValueError("Live provider is not enabled in Slice 1.")
+
+
+def create_app(provider=None, db_path=None):
+    provider = provider or UnconfiguredProvider()
+    repository = Repository(db_path or os.getenv("PICKYLENS_DB_PATH", "data/pickylens.sqlite3"))
+    service = Interactions(repository, provider)
+    app = FastAPI(title="PickyLens")
+    app.state.repository, app.state.provider = repository, provider
+    templates = Jinja2Templates(directory=str(BASE / "templates"))
+    app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
+
+    @app.exception_handler(KeyError)
+    async def missing(request, exc):
+        return JSONResponse({"detail": "Interaction not found"}, status_code=404)
+
+    @app.exception_handler(Conflict)
+    async def conflict(request, exc):
+        return JSONResponse({"detail": str(exc)}, status_code=409)
+
+    @app.exception_handler(ValueError)
+    async def invalid(request, exc):
+        return JSONResponse({"detail": str(exc)}, status_code=422)
+
+    def render(request, template, **context):
+        return templates.TemplateResponse(request=request, name=template, context={"stub": provider.test_stub, **context})
+
+    @app.get("/", response_class=HTMLResponse)
+    async def workspace(request: Request, interaction: str | None = None):
+        saved = repository.get(interaction) if interaction else None
+        if saved and saved.terminal:
+            return RedirectResponse(f"/interactions/{interaction}")
+        return render(request, "workspace.html", snapshot=saved, prompt=saved.current_request if saved else PROMPT, description=DESCRIPTION)
+
+    @app.get("/interactions", response_class=HTMLResponse)
+    async def history(request: Request):
+        return render(request, "interactions.html", interactions=repository.list())
+
+    @app.get("/interactions/{id}", response_class=HTMLResponse)
+    async def detail(request: Request, id: str):
+        return render(request, "interaction_detail.html", snapshot=repository.get(id), events=repository.trace(id))
+
+    @app.get("/api/interactions/{id}")
+    async def read(id: str):
+        return repository.get(id)
+
+    @app.post("/api/interactions/pre")
+    async def start(action: Action):
+        return await service.start(action)
+
+    @app.post("/api/interactions/{id}/{name}")
+    async def act(id: str, name: str, action: Action):
+        return await service.act(id, name, action)
+
+    return app
+
+
+app = create_app()

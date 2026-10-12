@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block content %}
+<div class="workspace"><section class="work"><div class="eyebrow">Demo scenario: Management consultant</div><h1>Make the recommendation count.</h1><p class="muted">{{ description }}</p>
+<label for="mode">Response mode</label><select id="mode" disabled><option value="live">{{ 'Development stub · synthetic' if stub else 'Live Model · not enabled yet' }}</option><option>Replay Demo · available in Slice 2</option></select>
+<label for="request">Your request</label><textarea id="request" rows="13" {% if snapshot %}readonly{% endif %}>{{ prompt }}</textarea>
+<p class="muted small">{% if snapshot %}Request revision is deferred to Slice 3; this checkpoint preserves the approved golden path.{% else %}The development stub follows the prefilled scenario only; edits are stored but are not semantically reviewed by this stub.{% endif %}</p>
+<button id="start" {% if snapshot %}hidden{% endif %}>Review with PickyLens</button><span id="saved" aria-live="polite"></span>
+<section id="first-answer" hidden><h2>AI response</h2><div class="answer-label">Synthetic development response</div><pre id="answer"></pre></section>
+<section id="followup-answer" hidden><h2>Follow-up response</h2><pre id="followup"></pre></section></section>
+<aside class="reviewer"><div class="eyebrow">Your quiet reviewer</div><ol id="progress" aria-label="Interaction stages"><li>PRE</li><li>AI</li><li>POST</li><li>NEXT</li><li>VERIFY</li></ol>
+<div id="error" role="alert" hidden></div><div id="panel" aria-live="polite"></div></aside></div>
+<script id="initial-state" type="application/json">{{ (snapshot.model_dump(mode='json') if snapshot else none)|tojson }}</script>
+<script charset="utf-8" src="/static/workspace.js?v=slice1" defer></script>{% endblock %}

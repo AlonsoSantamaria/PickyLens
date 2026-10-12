@@ -1,0 +1,5 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PickyLens</title><link rel="stylesheet" href="/static/styles.css"></head>
+<body><header><a class="brand" href="/">PickyLens</a><span class="tagline">Quality-check the whole AI interaction.</span><nav><a href="/">Workspace</a><a href="/interactions">Interactions</a></nav></header>
+{% if stub %}<div class="dev-banner" role="note"><strong>Slice 1 · deterministic development stub</strong> — synthetic scenario outputs and assessments. No live AI calls. This is not Replay Demo or real model evidence.</div>{% else %}<div class="dev-banner">Slice 1 checkpoint: start the documented stub runner to try the complete flow. Live and genuine Replay arrive in Slice 2.</div>{% endif %}
+<main>{% block content %}{% endblock %}</main></body></html>
