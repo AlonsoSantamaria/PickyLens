@@ -19,7 +19,7 @@ Build mode: fast — selected by the learner; mechanical verification remains ma
   Learner check: Start the documented devtools.stub_app server and open http://127.0.0.1:8000/. Use the prefilled scenario, review, choose Lowest upfront cost, save the clarification, approve the improved prompt, generate the answer, run POST, generate/edit/send the follow-up, then VERIFY and inspect History. Expect 8 Complete/1 Missing before repair and 9 Complete/0 Missing after, including the accepted priority. Report what you notice and what you would change before the remaining slices.
   Commit: `Build persistent PickyLens interaction quality loop`
 
-- [ ] **2. Run the honest, repeatable Replay Demo beside the live path**
+- [x] **2. Run the honest, repeatable Replay Demo beside the live path**
   Becomes usable: The default Replay Demo uses a documented genuine first response tied to canonical structured intent; all reviews, repair generation, the follow-up answer, and verification still run dynamically. Live Model remains available.
   Why now: The working loop can now demonstrate a real material defect repeatably without manipulating the model or hard-coding assessments.
   PRD ref: `prd.md > Replay Demo and Live Model`, `Switching Modes During Active Work`, `The Core Journey`
