@@ -4,17 +4,21 @@ Quality-check the whole AI interaction.
 
 ## Run PickyLens locally
 
-The application now supports genuine Replay Demo and Live Model through the configured OpenAI adapter. From the project directory, run:
+The normal public/judge-facing application uses live AI through the configured OpenAI adapter, with no Replay selector or synthetic fallback. From the project directory, run:
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Set `OPENAI_API_KEY` locally outside source control. Open http://127.0.0.1:8000/. Review the canonical scenario, inspect PRE and the canonical requirement list, then explicitly approve the canonical Replay request. Load the captured first answer, read it on the right, and choose Check this answer. Expand the cost/comparison evidence, generate a targeted repair, review it, send it, and verify the combined responses. Each review and repair action uses the configured live provider; opening the app makes no model calls. Replay replaces only first-answer acquisition. Dynamic assessments can vary; no expected result is embedded in the fixture.
+Set `OPENAI_API_KEY` locally outside source control. Open http://127.0.0.1:8000/. Review the consultant scenario, choose the request you approve, send it, read the answer on the right, and choose Check this answer. A fully complete first answer ends successfully. Repair is offered only for genuine gaps; uncertainty remains Needs review and requires the existing explicit approval path. Opening the workspace makes no model calls. Missing live configuration is reported clearly without substituting Replay or a stub.
 
-The fixture preserves the unchanged final-batch Attempt 1 answer, exact capture request, model, timestamps, response ID, usage, and a SHA-256 integrity hash. It contains conflicting cost statements. Canonical compatibility uses structured keys, constraints, decisions, and explicit approval; display wording is not compared. Arbitrary free-text mappings remain uncertain and require resetting to the canonical preset or using Live Model. The preset explicitly excludes PRE clarification choices; choose Live to retain changed intent.
+The normal API rejects internal Replay operations and keeps pre-existing internal records out of the public workspace/History while preserving them in storage. This is product separation, not authentication or multi-user isolation. Use separate databases for internal and controlled public instances.
 
-Mode switches after a response require confirmation and preserve superseded evidence in History. Request revision, explicit retry, pause/resume, restart recovery, and uncertainty-resolution controls are implemented. Slice 2 verification details are in `devpost/live-verification.md`.
+## Internal Replay diagnostics
+
+The engineering-only runner is `devtools.replay_app:app`. Start it locally on a separate port with `PICKYLENS_DB_PATH` pointing to an internal database. Do not expose it as the public application. It retains the Replay/Live selector, canonical binding, genuine captured contradiction, and provenance/integrity checks. Replay replaces only first-answer acquisition; reviews and follow-up remain model-backed. The historical Slice 2 evidence remains in `devpost/live-verification.md`.
+
+The fixture is unchanged. It contains conflicting cost statements; no expected assessment is embedded. Dynamic judgments can vary. Internal mode switches preserve superseded evidence and require confirmation; conservative structured compatibility remains enforced.
 
 ## Try the flow without model calls
 
@@ -87,3 +91,17 @@ The desktop view uses equal request/answer columns. Start with Review my request
 ## Build completion and reference map
 
 All four build slices, final hands-on review, and the Skill Pack learning wrap-up are complete. Open [the standalone app map](devpost/app-map.html) locally for the finished code route and reusable verification practice. Planning documents remain approved; completion and test evidence are recorded in [the build checklist](devpost/checklist.md). Gemini and 6-ship require separate approval and have not started.
+
+## Post-build live refinement and observability
+
+The completed 5-build milestone remains historical and unchanged. The separately authorized refinement is recorded in [post-build-live-ai.md](devpost/post-build-live-ai.md).
+
+Each live model attempt records provider/model, purpose, response ID, duration, token usage (including reasoning tokens where returned), and outcome. These typed records persist with the interaction snapshot and event trace, including failed and late results. Usage unavailable after a process/network interruption remains unknown; it is not inferred as zero. Engineering summaries expose the number of calls with known usage and sum only known values. No public quality score, dashboard, or billing is implemented.
+
+Read an existing interaction without model calls:
+
+```powershell
+.\.venv\Scripts\python.exe -m devtools.interaction_report path/to/interaction.sqlite3 INTERACTION_ID
+```
+
+`devtools.public_live_verify` is a one-attempt, six-call validation harness that uses normal API actions and refuses an existing evidence directory. It requires explicit live-call authorization; do not rerun or remove its evidence directory to obtain another attempt.

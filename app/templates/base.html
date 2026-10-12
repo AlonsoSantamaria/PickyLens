@@ -1,5 +1,5 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PickyLens</title><link rel="stylesheet" href="/static/styles.css"></head>
 <body><header id="global-header"><a class="brand" href="/">PickyLens</a><span class="tagline">Quality-check the whole AI interaction.</span><nav><a href="/">New case</a><a href="/interactions">Interactions</a></nav><div id="active-mode-slot"></div></header>
-{% if stub %}<div class="dev-banner" role="note"><strong>Deterministic test environment</strong> — synthetic scenario outputs and assessments. No live AI calls. This is not Replay Demo or real model evidence.</div>{% else %}<div class="dev-banner">Replay uses an unchanged captured first response. Reviews, follow-up generation, follow-up answers, and verification use the configured live model.</div>{% endif %}
+{% if stub %}<div class="dev-banner" role="note"><strong>Deterministic test environment</strong> — synthetic scenario outputs and assessments. No live AI calls. This is not Replay Demo or real model evidence.</div>{% elif internal_tools %}<div class="dev-banner">Replay uses an unchanged captured first response. Reviews, follow-up generation, follow-up answers, and verification use the configured live model.</div>{% endif %}
 <main>{% block content %}{% endblock %}</main></body></html>

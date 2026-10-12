@@ -27,5 +27,5 @@ def test_normal_workspace_has_no_build_debug_copy(tmp_path):
     class NoCalls(StubProvider):
         test_stub=False
     page=TestClient(create_app(NoCalls(),tmp_path/"normal.sqlite3")).get("/").text
-    assert "Replay Demo" in page and "Live Model" in page
+    assert "Replay Demo" not in page and '<select id="mode"' not in page
     assert "Slice 1" not in page and "deferred to Slice" not in page

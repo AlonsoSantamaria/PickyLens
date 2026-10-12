@@ -1,4 +1,7 @@
 import json
+from time import perf_counter
+from app.core.contracts import ModelCall
+from app.providers.telemetry import calls
 from openai import AsyncOpenAI
 from app.core.contracts import Answer
 
@@ -22,15 +25,30 @@ class OpenAIProvider:
     async def request(self, messages, purpose, schema=None):
         args = dict(model=self.settings.model, reasoning={"effort": self.settings.reasoning_effort}, input=messages, store=False)
         record = self.recorder.begin(purpose, args) if self.recorder else None
+        entry = ModelCall(provider="openai", model=self.settings.model, purpose=purpose)
+        bucket = calls.get()
+        if bucket is not None:
+            bucket.append(entry)
+        started = perf_counter()
         try:
             if schema:
                 response = await self.client.responses.parse(**args, text_format=schema)
             else:
                 response = await self.client.responses.create(**args)
         except Exception as exc:
+            entry.status, entry.error_type = "failed", type(exc).__name__
             if record is not None:
                 self.recorder.fail(record, type(exc).__name__, getattr(exc, "status_code", None), getattr(exc, "code", None))
             raise ValueError(f"OpenAI request failed ({type(exc).__name__}, HTTP {getattr(exc, 'status_code', 'unavailable')}).") from None
+        finally:
+            entry.duration_ms = round((perf_counter() - started) * 1000, 2)
+        entry.status, entry.response_id, entry.model = response.status, response.id, response.model
+        if response.usage:
+            entry.input_tokens = response.usage.input_tokens
+            entry.output_tokens = response.usage.output_tokens
+            entry.total_tokens = response.usage.total_tokens
+            details = getattr(response.usage, "output_tokens_details", None)
+            entry.reasoning_tokens = getattr(details, "reasoning_tokens", None)
         if record is not None:
             self.recorder.finish(record, response)
         if response.status != "completed":

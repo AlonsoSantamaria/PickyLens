@@ -103,7 +103,25 @@ class NextProposal(Contract):
     target_requirement_ids: list[str]
 
 
+class ModelCall(Contract):
+    call_id: str = Field(default_factory=uid)
+    operation_id: str | None = None
+    provider: str
+    model: str
+    purpose: str
+    started_at: str = Field(default_factory=now)
+    duration_ms: float | None = None
+    status: str = "attempted"
+    response_id: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    reasoning_tokens: int | None = None
+    total_tokens: int | None = None
+    error_type: str | None = None
+
+
 class Snapshot(Contract):
+    model_calls: list[ModelCall] = Field(default_factory=list)
     pending_operation: str | None = None
     pending_action: str | None = None
     failed_action: str | None = None

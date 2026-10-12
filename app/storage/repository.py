@@ -85,8 +85,12 @@ class Repository:
     def _finish(self, result, operation_id, event_type):
         # The operation token survives trace-only revision changes, but not supersession.
         current = self.get(result.interaction_id)
+        known = {c.call_id for c in current.model_calls}
+        merged = current.model_calls + [c for c in result.model_calls if c.call_id not in known]
         if current.pending_operation != operation_id:
+            current.model_calls = merged
             return self.save(current, "superseded_result", operation_id, current.revision, superseded=result)
+        result.model_calls = merged
         result.revision = current.revision
         result.last_event_sequence = current.last_event_sequence
         result.pending_operation = result.pending_action = None

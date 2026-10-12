@@ -6,6 +6,7 @@ from app.core.next import generate
 from app.core.contracts import Snapshot, Status, ApprovedIntent, Requirement
 from app.services.replay import load_fixture, acquire
 from app.storage.repository import Conflict
+from app.providers.telemetry import calls
 
 
 class StageFailure(ValueError):
@@ -199,6 +200,14 @@ class Interactions:
         return await self.run(s, name, a)
 
     async def run(self, s, name, a):
+        records = []
+        token = calls.set(records)
+        try:
+            return await self._run(s, name, a, records)
+        finally:
+            calls.reset(token)
+
+    async def _run(self, s, name, a, records):
         was_failure = bool(s.failure)
         before = s.model_copy(deep=True)
         try:
@@ -248,8 +257,16 @@ class Interactions:
             s.failure = f"{label} could not be completed. Completed work is saved."
             s.failed_action = name
             s.lifecycle_status = "Failed at " + name.upper()
+            self.attach_calls(s, records, a.operation_id)
             saved = self.repository.finish(s, a.operation_id, "stage_failed")
             if saved.failed_action == name and saved.failure:
                 raise StageFailure(saved, status_code) from None
             return saved
+        self.attach_calls(s, records, a.operation_id)
         return self.repository.finish(s, a.operation_id, event)
+
+    @staticmethod
+    def attach_calls(snapshot, records, operation_id):
+        for record in records:
+            record.operation_id = operation_id
+        snapshot.model_calls.extend(records)

@@ -25,9 +25,10 @@ class UnconfiguredProvider:
         raise ValueError("Configure OPENAI_API_KEY outside source control.")
 
 
-def create_app(provider=None, db_path=None):
+def create_app(provider=None, db_path=None, *, internal_tools=None):
     settings = load_settings()
     provider = provider or (OpenAIProvider(settings) if settings.api_key.get_secret_value() else UnconfiguredProvider())
+    internal_tools = provider.test_stub if internal_tools is None else internal_tools
     repository = Repository(db_path or load_settings().db_path)
     repository.recover_interrupted()
     service = Interactions(repository, provider)
@@ -59,34 +60,52 @@ def create_app(provider=None, db_path=None):
     async def invalid(request, exc):
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
+    def visible(snapshot):
+        return internal_tools or (snapshot.mode == "live" and not snapshot.test_stub)
+
+    def public_record(id):
+        snapshot = repository.get(id)
+        if not visible(snapshot):
+            raise KeyError(id)
+        return snapshot
+
+    def live_action(action, name=None):
+        if not internal_tools and (action.mode != "live" or action.canonical_scenario or name in {"mode", "reset-scenario", "approve-canonical"}):
+            raise ValueError("This workspace supports live AI interactions only.")
+
     def render(request, template, **context):
-        return templates.TemplateResponse(request=request, name=template, context={"stub": provider.test_stub, **context})
+        return templates.TemplateResponse(request=request, name=template, context={"stub": provider.test_stub, "internal_tools": internal_tools, "live_configured": not isinstance(provider, UnconfiguredProvider), **context})
 
     @app.get("/", response_class=HTMLResponse)
     async def workspace(request: Request, interaction: str | None = None):
-        saved = repository.get(interaction) if interaction else None
+        saved = public_record(interaction) if interaction else None
         if saved and saved.terminal:
             return RedirectResponse(f"/interactions/{interaction}")
-        return render(request, "workspace.html", snapshot=saved, prompt=saved.current_request if saved else PROMPT, description=DESCRIPTION, demo=load_fixture())
+        return render(request, "workspace.html", snapshot=saved, prompt=saved.current_request if saved else PROMPT, description=DESCRIPTION, demo=load_fixture() if internal_tools else None)
 
     @app.get("/interactions", response_class=HTMLResponse)
     async def history(request: Request):
-        return render(request, "interactions.html", interactions=repository.list())
+        return render(request, "interactions.html", interactions=[s for s in repository.list() if visible(s)])
 
     @app.get("/interactions/{id}", response_class=HTMLResponse)
     async def detail(request: Request, id: str):
-        return render(request, "interaction_detail.html", snapshot=repository.get(id), events=repository.trace(id))
+        return render(request, "interaction_detail.html", snapshot=public_record(id), events=repository.trace(id))
 
     @app.get("/api/interactions/{id}")
     async def read(id: str):
-        return repository.get(id)
+        return public_record(id)
 
     @app.post("/api/interactions/pre")
     async def start(action: Action):
+        live_action(action)
+        if isinstance(provider, UnconfiguredProvider):
+            return JSONResponse({"detail": "Live AI is not configured. Ask the operator to configure the AI service, then try again."}, status_code=503)
         return await service.start(action)
 
     @app.post("/api/interactions/{id}/{name}")
     async def act(id: str, name: str, action: Action):
+        public_record(id)
+        live_action(action, name)
         return await service.act(id, name, action)
 
     return app

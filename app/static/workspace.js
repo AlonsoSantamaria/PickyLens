@@ -114,7 +114,7 @@ function syncOrientation(){
   document.body.classList.toggle("active-case",active);
   const control=document.querySelector(".mode-control");
   const destination=document.getElementById(active?"active-mode-slot":"new-mode-slot");
-  if(control.parentElement!==destination)destination.append(control);
+  if(control && destination && control.parentElement!==destination)destination.append(control);
   measureOrientation();
 }
 function measureOrientation(){
@@ -129,7 +129,7 @@ function render() {
   for(const id of ["request-review","answer-review","repair-panel","verification-panel","recovery","request-tools"])document.getElementById(id).replaceChildren();
   const stage=state?.stage||"pre", paused=state?.lifecycle_status==="Paused";
   const terminal=stage==="done";
-  const active={pre:"pre",ai:"ai",post:"ai",post_reviewed:"post",next:"next",verify:"verify",verified:"verify",done:"verify"}[stage];
+  const active={pre:"pre",ai:"ai",post:"ai",post_reviewed:"post",next:"next",verify:"verify",verified:"verify",done:state?.verification?"verify":"post"}[stage];
   const completed={pre:!!state?.intent,ai:!!state?.answer,post:!!state?.post,next:!!state?.followup_answer,verify:!!state?.verification};
   document.querySelectorAll("#progress li").forEach(li=>{
     const key=li.dataset.stage, current=key===active;
@@ -142,7 +142,7 @@ function render() {
   document.getElementById("start").hidden=!!state;
   document.getElementById("start").disabled=!request.value.trim()||busy;
   request.readOnly=!!state&&!editingRequest;
-  mode.disabled=busy||mode.options.length===1||terminal||paused;
+  mode.disabled=busy||!mode.options||mode.options.length===1||terminal||paused;
   if(state){mode.value=state.mode;if(!editingRequest)request.value=state.current_request;}
   document.getElementById("first-answer").hidden=!state?.answer;
   document.getElementById("answer-placeholder").hidden=!!state?.answer;
@@ -152,7 +152,7 @@ function render() {
   document.getElementById("answer-heading").textContent=stage==="post"?"AI answer ready":"AI answer";
   document.getElementById("answer-side").classList.toggle("reading-active",stage==="post");
   if(!state){panel=document.getElementById("request-review");panel.append(node("p",request.value.trim()?"PickyLens checks your request. You choose which suggestions to accept.":"Enter a request to begin.","muted small"));return;}
-  if(state.answer){document.getElementById("answer").textContent=state.answer.text;document.querySelector(".answer-label").textContent=state.answer.metadata.acquisition==="replay"?"Genuine captured response · replayed unchanged":state.test_stub?"Synthetic test response":"Live model response";}
+  if(state.answer){document.getElementById("answer").textContent=state.answer.text;document.querySelector(".answer-label").textContent=state.answer.metadata.acquisition==="replay"?"Genuine captured response · replayed unchanged":state.test_stub?"Synthetic test response":"AI answer";}
   if(state.followup_answer)document.getElementById("followup").textContent=state.followup_answer.text;
   const recovery=document.getElementById("recovery"), tools=document.getElementById("request-tools");
   if(paused){recovery.append(node("p","This interaction is paused. Completed work is saved."),button("Resume interaction",()=>call("resume")));}
@@ -212,6 +212,6 @@ function render() {
   }
 }
 
-document.getElementById("start").onclick=()=>call("pre",{request_text:request.value,mode:mode.value,canonical_scenario:canonical&&!mode.disabled});
+document.getElementById("start").onclick=()=>call("pre",{request_text:request.value,mode:mode.value,canonical_scenario:!!demo&&canonical&&!mode.disabled});
 request.oninput=()=>{canonical=false;if(!state)render();};
 render();
