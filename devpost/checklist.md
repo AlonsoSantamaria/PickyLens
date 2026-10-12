@@ -9,7 +9,7 @@ Build mode: fast — selected by the learner; mechanical verification remains ma
 
 ## Slices
 
-- [ ] **1. Review a request and verify a targeted repair end to end**
+- [x] **1. Review a request and verify a targeted repair end to end**
   Becomes usable: A local two-column workspace where the user starts PRE, reviews extracted requirements and clarifications, approves intent, obtains a deterministic stub answer in Slice 1, runs POST, reviews and sends a minimal follow-up, and verifies the combined result. Meaningful steps survive restart, and saved interactions are inspectable through a minimal list/detail.
   Why now: Proves the unique quality loop early, including human ownership and evidence, instead of building scaffolding around an absent kernel. Bootstrap, persistence, and the provider adapter support this usable path within the slice.
   PRD ref: `prd.md > The Core Journey`, `PRE Review and Approved Intent`, `POST Evidence Review`, `NEXT Follow-Up and VERIFY`, `Minimal Interaction History`, `Look and Feel`
