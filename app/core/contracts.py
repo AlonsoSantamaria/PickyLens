@@ -50,6 +50,8 @@ class PREProposal(Contract):
 
 
 class ApprovedIntent(Contract):
+    replay_scenario: str | None = None
+    replay_binding: dict | None = None
     version: int
     original_request: str
     approved_prompt: str
@@ -71,6 +73,12 @@ class Evidence(Contract):
     location: str
 
 
+class ConsistencyFinding(Contract):
+    certainty: str
+    explanation: str
+    evidence: list[Evidence]
+
+
 class Assessment(Contract):
     requirement_id: str
     requirement_text: str
@@ -78,6 +86,7 @@ class Assessment(Contract):
     explanation: str
     evidence: list[Evidence]
     uncertainty_reason: str | None = None
+    consistency_findings: list[ConsistencyFinding] = Field(default_factory=list)
 
 
 class Evaluation(Contract):
@@ -119,6 +128,7 @@ class Snapshot(Contract):
     verification: Evaluation | None = None
     failure: str | None = None
     test_stub: bool = False
+    canonical_ready: bool = False
 
     @property
     def terminal(self):
@@ -139,3 +149,5 @@ class Action(Contract):
     prompt: str | None = None
     clarifications: dict[str, str] = Field(default_factory=dict)
     confirmed_red: bool = False
+    canonical_scenario: bool = False
+    confirmed_switch: bool = False

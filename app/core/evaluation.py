@@ -12,6 +12,22 @@ async def evaluate(provider, intent, answers, phase):
     for item in result.assessments:
         if item.requirement_text != expected[item.requirement_id]:
             raise ValueError("Assessment changed requirement text")
+        for finding in item.consistency_findings:
+            if finding.certainty not in {"confirmed", "uncertain"}:
+                raise ValueError("Invalid consistency certainty")
+            if not finding.explanation.strip():
+                raise ValueError("Consistency finding requires an explanation")
+            if finding.certainty == "confirmed" and len({(e.response_id, e.excerpt) for e in finding.evidence}) < 2:
+                raise ValueError("Confirmed contradiction requires both conflicting claims")
+            item.evidence.extend(e for e in finding.evidence if e not in item.evidence)
+        confirmed = [f for f in item.consistency_findings if f.certainty == "confirmed"]
+        uncertain = [f for f in item.consistency_findings if f.certainty == "uncertain"]
+        if confirmed:
+            item.status = Status.partial
+            item.explanation = " ".join(f.explanation for f in confirmed)
+        elif uncertain:
+            item.status = Status.needs_review
+            item.uncertainty_reason = " ".join(f.explanation for f in uncertain)
         if item.status == Status.complete and not item.evidence:
             raise ValueError("Complete assessment requires evidence")
         if item.status == Status.needs_review and not item.uncertainty_reason:

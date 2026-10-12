@@ -5,6 +5,9 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.contracts import Action
+from app.config import load_settings
+from app.providers.openai_adapter import OpenAIProvider
+from app.services.replay import load_fixture
 from app.storage.repository import Repository, Conflict
 from app.services.interactions import Interactions
 from app.services.scenario import PROMPT, DESCRIPTION
@@ -16,15 +19,16 @@ class UnconfiguredProvider:
     test_stub = False
 
     async def generate_structured(self, *args, **kwargs):
-        raise ValueError("Live provider is not enabled in Slice 1. Start the documented development stub runner.")
+        raise ValueError("Configure OPENAI_API_KEY outside source control to run model-backed reviews.")
 
     async def generate_text(self, *args, **kwargs):
-        raise ValueError("Live provider is not enabled in Slice 1.")
+        raise ValueError("Configure OPENAI_API_KEY outside source control.")
 
 
 def create_app(provider=None, db_path=None):
-    provider = provider or UnconfiguredProvider()
-    repository = Repository(db_path or os.getenv("PICKYLENS_DB_PATH", "data/pickylens.sqlite3"))
+    settings = load_settings()
+    provider = provider or (OpenAIProvider(settings) if settings.api_key.get_secret_value() else UnconfiguredProvider())
+    repository = Repository(db_path or load_settings().db_path)
     service = Interactions(repository, provider)
     app = FastAPI(title="PickyLens")
     app.state.repository, app.state.provider = repository, provider
@@ -51,7 +55,7 @@ def create_app(provider=None, db_path=None):
         saved = repository.get(interaction) if interaction else None
         if saved and saved.terminal:
             return RedirectResponse(f"/interactions/{interaction}")
-        return render(request, "workspace.html", snapshot=saved, prompt=saved.current_request if saved else PROMPT, description=DESCRIPTION)
+        return render(request, "workspace.html", snapshot=saved, prompt=saved.current_request if saved else PROMPT, description=DESCRIPTION, demo=load_fixture())
 
     @app.get("/interactions", response_class=HTMLResponse)
     async def history(request: Request):

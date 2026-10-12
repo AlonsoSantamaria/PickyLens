@@ -2,6 +2,11 @@
 let state = JSON.parse(document.getElementById("initial-state").textContent);
 const panel = document.getElementById("panel"), request = document.getElementById("request");
 let busy = false;
+const demo=JSON.parse(document.getElementById("canonical-demo").textContent);
+let canonical=true, replayRejected=false;
+const mode=document.getElementById("mode");
+if(state)mode.value=state.mode;
+mode.onchange=()=>{if(state){const ok=!state.answer||confirm("Switch mode? Current answer and downstream reviews become superseded in History.");if(ok)call("mode",{mode:mode.value,confirmed_switch:true});else mode.value=state.mode;}};
 const labels = {complete:"Complete",partial:"Partial",missing:"Missing",needs_review:"Needs review"};
 function node(tag, text, cls) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(cls)n.className=cls; return n; }
 function button(text, fn, secondary=false) { const b=node("button",text,secondary?"secondary":""); b.onclick=fn; b.disabled=busy; return b; }
@@ -17,9 +22,10 @@ async function call(action, extra={}) {
     const result=await response.json();
     if(!response.ok)throw new Error(typeof result.detail==="string"?result.detail:"This action could not be completed.");
     state=result;
+    replayRejected=false;
     history.replaceState(null,"",`/?interaction=${state.interaction_id}`);
     document.getElementById("saved").textContent="Saved to Interactions";
-  } catch(e) { const box=document.getElementById("error");box.textContent=e.message;box.hidden=false; }
+  } catch(e) { if(action==="mode"&&extra.mode==="replay")replayRejected=true; const box=document.getElementById("error");box.textContent=e.message;box.hidden=false; }
   finally { busy=false; render(); }
 }
 function counts(review, prefix="") {
@@ -60,6 +66,13 @@ function showPRE() {
   },true));
   panel.append(node("h2","Improved prompt"));
   const improved=node("pre",p.improved_prompt+Object.entries(state.accepted_clarifications).map(([k,v])=>`\nAccepted ${k}: ${v}`).join(""));panel.append(improved);
+  if(mode.value==="replay"){
+    const details=node("details");details.append(node("summary","Canonical Replay request and requirements"),node("pre",demo.prompt));
+    const canonicalList=node("ul");demo.requirements.forEach(t=>canonicalList.append(node("li",t)));details.append(canonicalList);panel.append(details);
+    panel.append(node("p","Replay requires approval of this unchanged canonical intent. Approving this preset uses the original request with no accepted clarifications, replacing any clarification choices above. Use Live Model to keep a changed intent."));
+    if(state.canonical_ready)panel.append(button("Approve canonical Replay request",()=>call("approve-canonical",{confirmed_red:p.readiness!=="red"||confirm("Send canonical original despite the PRE warning?")})));
+    panel.append(button("Reset to canonical scenario and review",()=>call("reset-scenario"),true));
+  }
   panel.append(node("h2","Requirements you are approving"));
   const list=node("ul",undefined,"intent-list");p.requirements.forEach(r=>list.append(node("li",r.text)));
   Object.entries(state.accepted_clarifications).forEach(([k,v])=>list.append(node("li",`Improved prompt only \u2014 Accepted ${k}: ${v}`)));
@@ -78,12 +91,17 @@ function render() {
   document.getElementById("start").hidden=!!state;
   document.getElementById("start").disabled=!request.value.trim()||busy;
   request.readOnly=!!state;
+  if(state){mode.value=state.mode;request.value=state.current_request;}
   const stage=state?.stage||"pre";
   document.querySelectorAll("#progress li").forEach(li=>li.classList.toggle("active",li.textContent.toLowerCase()===(stage==="post_reviewed"?"post":stage==="done"||stage==="verified"?"verify":stage)));
   if(!state){panel.append(node("h2","Ready to review your request."),node("p",request.value.trim()?"Start with a deliberate review. You choose what is sent.":"Enter a request to begin."));return;}
-  if(state.answer){document.getElementById("first-answer").hidden=false;document.getElementById("answer").textContent=state.answer.text;}
+  document.getElementById("first-answer").hidden=!state.answer;
+  document.getElementById("followup-answer").hidden=!state.followup_answer;
+  if(state.answer){document.getElementById("first-answer").hidden=false;document.getElementById("answer").textContent=state.answer.text;document.querySelector(".answer-label").textContent=state.answer.metadata.acquisition==="replay"?"Captured genuine response - replayed unchanged":state.test_stub?"Synthetic development response":"Live model response";}
   if(state.followup_answer){document.getElementById("followup-answer").hidden=false;document.getElementById("followup").textContent=state.followup_answer.text;}
+  if(replayRejected)panel.append(button("Reset to canonical scenario and review",()=>call("reset-scenario")),button("Remain in Live Model",()=>{replayRejected=false;render();},true));
   if(stage==="pre"){showPRE();return;}
+  if(stage==="ai"&&state.mode==="replay"&&!state.intent.replay_scenario){panel.append(button("Reset to canonical scenario and review",()=>call("reset-scenario")),button("Continue in Live Model",()=>call("mode",{mode:"live",confirmed_switch:true})));return;}
   if(stage==="ai"){panel.append(node("h2","Intent approved"),node("p","The requirement set is frozen for POST and VERIFY."),button("Generate AI response",()=>call("answer")));return;}
   if(stage==="post"){panel.append(node("h2","Ready for POST"),node("p","Compare the answer with your approved intent."),button("Run POST review",()=>call("post")));return;}
   const review=state.verification||state.post;
@@ -114,6 +132,6 @@ function render() {
     const link=node("a","Inspect saved Interaction \u2192");link.href=`/interactions/${state.interaction_id}`;panel.append(link);
   }
 }
-document.getElementById("start").onclick=()=>call("pre",{request_text:request.value,mode:"live"});
-request.oninput=render;
+document.getElementById("start").onclick=()=>call("pre",{request_text:request.value,mode:mode.value,canonical_scenario:canonical&&!mode.disabled});
+request.oninput=()=>{canonical=false;render();};
 render();

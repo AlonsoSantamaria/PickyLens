@@ -21,12 +21,12 @@ Build mode: fast — selected by the learner; mechanical verification remains ma
 
 - [ ] **2. Run the honest, repeatable Replay Demo beside the live path**
   Becomes usable: The default Replay Demo uses a documented genuine first response tied to canonical structured intent; all reviews, repair generation, the follow-up answer, and verification still run dynamically. Live Model remains available.
-  Why now: The working loop can now demonstrate a real omission repeatably without manipulating the model or hard-coding assessments.
+  Why now: The working loop can now demonstrate a real material defect repeatably without manipulating the model or hard-coding assessments.
   PRD ref: `prd.md > Replay Demo and Live Model`, `Switching Modes During Active Work`, `The Core Journey`
   Spec ref: `spec.md > Replay Scenario and Compatibility`, `Provider Boundary and OpenAI Adapter`, `Operations, Restart, and Stale Responses`, `HTTP Contracts`
-  Build: Capture or select a real unmanipulated consultant answer with a genuine omission, preserve exact provenance in versioned JSON, and bind it to canonical requirements/accepted decisions/constraints. Implement deterministic structured compatibility, conservative uncertainty rejection, reset/live choices, mode-switch confirmation, and superseded response evidence. Never substitute a test stub or fabricated provenance for the real replay fixture. Explain the purpose and expected number of live calls before any capture or semantic smoke run; stop to report account/model-access failures instead of silently changing models.
-  Verify (mechanical): Run replay compatibility tests covering equivalent structured intent with superficial wording changes, substantive differences, unmappable requirements, and no compatibility AI call. Verify only the first answer is replaced and subsequent stages use the provider. Run mode-switch route tests preserving PRE/intent and superseding downstream results. Manually inspect real capture provenance and omission evidence; use a bounded, announced real-model smoke run to verify API/schema support and dynamic semantic behavior.
-  Learner check: Open Replay Demo, follow the canonical scenario, inspect the captured-response label and genuine omission, then review/edit/send the targeted follow-up and inspect verification. Change material intent and confirm Replay offers reset or Live rather than silently using an unrelated answer.
+  Build: Capture or select a real unmanipulated consultant answer with a genuine material quality defect, preserve exact provenance in versioned JSON, and bind it to canonical requirements/accepted decisions/constraints. Implement deterministic structured compatibility, conservative uncertainty rejection, reset/live choices, mode-switch confirmation, and superseded response evidence. Never substitute a test stub or fabricated provenance for the real replay fixture. Explain the purpose and expected number of live calls before any capture or semantic smoke run; stop to report account/model-access failures instead of silently changing models.
+  Verify (mechanical): Run replay compatibility tests covering equivalent structured intent with superficial wording changes, substantive differences, unmappable requirements, and no compatibility AI call. Verify only the first answer is replaced and subsequent stages use the provider. Run mode-switch route tests preserving PRE/intent and superseding downstream results. Manually inspect real capture provenance and material-defect evidence; use a bounded, announced real-model smoke run to verify API/schema support and dynamic semantic behavior.
+  Learner check: Open Replay Demo, follow the canonical scenario, inspect the captured-response label and genuine material defect, then review/edit/send the targeted follow-up and inspect verification. Change material intent and confirm Replay offers reset or Live rather than silently using an unrelated answer.
   Commit: `Add genuine replay fixture and deterministic compatibility`
 
 - [ ] **3. Resume, revise, and recover without stale or misleading results**
@@ -80,3 +80,28 @@ Activity mode: Focused alternative for an experienced plan-first user; perform o
 
 - Slice 1 narrowed by the learner to the smallest complete golden path with real SQLite and deterministic provider stubs, including a labeled local stub runner. No live calls in this slice. Retries, supersession, concurrency, and recovery edge cases remain in slice 3. Stop at the early hands-on checkpoint until the learner approves continuing.
 - Slice 1 browser verification exposed misencoded JavaScript punctuation; corrected the source and script encoding and verified the rendered reviewer labels. Local-only pytest scratch is created under ignored work/ rather than outside the project. No product or architecture changes.
+
+- Slice 2 started: deterministic canonical-intent comparison and tests added. Integration, provenance capture, and real-provider verification remain incomplete. No API key was available in the execution environment or a project .env file; no live calls made. First-use guidance remains deferred to final polish.
+
+- Local development now loads project-root .env through python-dotenv with process-environment precedence; production ignores repository dotenv and uses the planned external systemd environment file. Secret values remain excluded.
+- Slice 2 initial live verification made exactly three calls using gpt-5.6-sol/low: PRE, first answer, POST. All eight original requirements were complete. No suitable omission fixture; stopped before further capture or unnecessary NEXT/VERIFY. See live-verification.md. Nineteen deterministic tests passed. Slice 2 remains unchecked.
+
+
+## Official Deferred Stretch Goal: PickyLens Gemini CLI Extension v0.1
+
+Objective: demonstrate the same PickyLens Core inside an external AI host workflow.
+Target: Gemini CLI extension with BeforeAgent -> PRE, AfterAgent -> POST, and one manual PickyLens command. Reuse approved-intent/evaluation logic without duplicating product logic in the adapter.
+Manual control remains available. Automatic PRE/POST is lightweight and advisory. No automatic retry or silent task alteration. The human controls clarification, repair, and follow-up.
+Gemini is a host adapter; no Gemini-specific assumptions enter the core. Hook feasibility is to be verified when this stretch work is authorized.
+Status: officially recorded, deferred, not implemented. Outside the MVP and current Slice 2 work. Finish the approved Slice 2 first.
+
+- Final authorized capture batch exhausted exactly four additional calls (seven cumulative). Both POST outcomes were 8 Complete with no Partial/Missing; no omission fixture obtained. The initial successful capture remains preserved. Manual inspection found a cost inconsistency missed by POST in the first additional answer; documented as an evaluator limitation. No further calls or Gemini implementation. Slice 2 remains incomplete pending the learner decision.
+
+
+## Slice 2 completion evidence
+
+- Learner authorized the material-quality-defect amendment and one final POST verification, without additional first-response capture.
+- Genuine final-batch Attempt 1 integrated unchanged with provenance/integrity hash. POST dynamically detected four Partial requirements affected by conflicting costs, with four Complete.
+- 29 deterministic tests pass; real Uvicorn workspace/History HTTP checks pass. Replay replaces only first-answer acquisition; structured compatibility makes no AI call.
+- Exactly one additional live POST call; no live NEXT/follow-up/VERIFY in this batch. Those stages were verified deterministically, not claimed as live semantic success.
+- Stop after Slice 2 per learner instruction. No Slice 3 or Gemini stretch implementation. Final-polish guidance remains deferred.
