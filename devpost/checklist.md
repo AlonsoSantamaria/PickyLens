@@ -29,7 +29,7 @@ Build mode: fast — selected by the learner; mechanical verification remains ma
   Learner check: Open Replay Demo, follow the canonical scenario, inspect the captured-response label and genuine material defect, then review/edit/send the targeted follow-up and inspect verification. Change material intent and confirm Replay offers reset or Live rather than silently using an unrelated answer.
   Commit: `Add genuine replay fixture and deterministic compatibility`
 
-- [ ] **3. Resume, revise, and recover without stale or misleading results**
+- [x] **3. Resume, revise, and recover without stale or misleading results**
   Becomes usable: Active requests can be revised safely, failed work can be retried or paused and resumed, and uncertainty or already-complete answers end honestly without unnecessary repair calls.
   Why now: The demonstrated core is extended across the edge cases that protect traceability and user control, while retaining the same small workspace and History.
   PRD ref: `prd.md > Request Changes and Superseded Results`, `POST Outcomes Without Repairable Gaps`, `Minimal Interaction History`, `Empty Requests and Empty History`, `States and Boundaries`
