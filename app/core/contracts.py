@@ -104,6 +104,12 @@ class NextProposal(Contract):
 
 
 class Snapshot(Contract):
+    pending_operation: str | None = None
+    pending_action: str | None = None
+    failed_action: str | None = None
+    recovered: bool = False
+    approved_uncertainty: list[str] = Field(default_factory=list)
+    uncertainty_checked: list[str] = Field(default_factory=list)
     schema_version: int = 1
     interaction_id: str = Field(default_factory=uid)
     title: str = "Operational alternatives recommendation"
@@ -138,6 +144,8 @@ class Snapshot(Contract):
 class EventPayload(Contract):
     snapshot: Snapshot
     operation_id: str
+    request_signature: str | None = None
+    superseded_snapshot: Snapshot | None = None
 
 
 class Action(Contract):
@@ -151,3 +159,4 @@ class Action(Contract):
     confirmed_red: bool = False
     canonical_scenario: bool = False
     confirmed_switch: bool = False
+    requirement_ids: list[str] = Field(default_factory=list)

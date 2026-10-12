@@ -14,7 +14,7 @@ Set `OPENAI_API_KEY` locally outside source control. Open http://127.0.0.1:8000/
 
 The fixture preserves the unchanged final-batch Attempt 1 answer, exact capture request, model, timestamps, response ID, usage, and a SHA-256 integrity hash. It contains conflicting cost statements. Canonical compatibility uses structured keys, constraints, decisions, and explicit approval; display wording is not compared. Arbitrary free-text mappings remain uncertain and require resetting to the canonical preset or using Live Model. The preset explicitly excludes PRE clarification choices; choose Live to retain changed intent.
 
-Mode switches after a response require confirmation and preserve superseded evidence in History. Request revision, comprehensive retries/recovery, and uncertainty-resolution controls remain Slice 3 work. Slice 2 verification details are in `devpost/live-verification.md`.
+Mode switches after a response require confirmation and preserve superseded evidence in History. Request revision, explicit retry, pause/resume, restart recovery, and uncertainty-resolution controls are implemented. Slice 2 verification details are in `devpost/live-verification.md`.
 
 ## Deterministic development checkpoint
 
@@ -56,3 +56,16 @@ Development loads only the project-root `.env`, with normal process environment 
 For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. This is deployment documentation only; no server changes have been made.
 
 The bounded Slice 2 verification harness is `python -m devtools.live_verify`; it records attempts and usage under ignored `work/live-verification/`, disables SDK retries, and refuses automatic reruns of an existing capture. Never run it without an authorized live-call budget.
+
+
+## Slice 3 recovery and boundaries
+
+Run one application process/worker per SQLite instance. On startup, unfinished operations become interrupted and require an explicit retry. Completed context is preserved; there are no automatic model retries. If a remote answer was lost before saving, retry can incur another model call.
+
+Every mutation has an operation ID and expected revision. Re-delivery of the same operation returns its saved outcome or pending state without another call. Reusing an ID for different input is rejected. Stale clients receive HTTP 409 and the current snapshot. Provider failures return a concise 502/504 message and the saved snapshot. Failure never advances the stage.
+
+In the workspace, Pause preserves work; Resume restores it. Retry runs only the failed step. Edit request (including an edited improved prompt) reruns PRE and requires new intent approval. Previous intent and response evidence remains in the read-only trace as superseded. Late provider results are recorded separately and never become current. Mode switches preserve valid intent and require confirmation when superseding response-dependent work.
+
+Needs review is counted separately. Resolve uncertainty first reassesses existing evidence; a narrowly targeted AI question requires explicit approval and still requires a separate send action. An uncertainty-only result can end as Completed with review items. Terminal interactions remain read-only and have no Resume action.
+
+For a zero-live-call hands-on check, start the existing development stub runner. Run PRE, send the original, generate a stub answer, pause, reload, and resume. Edit the request and save it; confirm the old answer disappears from the workspace and remains labeled Superseded evidence in History. The stub remains deliberately scenario-specific; automated tests exercise failure and uncertainty cases with separate deterministic providers.

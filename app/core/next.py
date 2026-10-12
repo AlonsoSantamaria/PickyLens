@@ -1,8 +1,12 @@
 from app.core.contracts import NextProposal, Status
 
 
-async def generate(provider, intent, post, answer):
+async def generate(provider, intent, post, answer, approved_uncertainty=()):
     allowed = {a.requirement_id for a in post.assessments if a.status in {Status.partial, Status.missing}}
+    uncertain = {a.requirement_id for a in post.assessments if a.status == Status.needs_review}
+    if not set(approved_uncertainty) <= uncertain:
+        raise ValueError("Uncertainty approval is not current")
+    allowed |= set(approved_uncertainty)
     if not allowed:
         raise ValueError("No repairable gaps were identified")
     result = await provider.generate_structured({"intent": intent.model_dump(mode="json"),

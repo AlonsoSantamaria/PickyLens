@@ -2,6 +2,8 @@ from app.core.contracts import Evaluation, Status
 
 
 async def evaluate(provider, intent, answers, phase):
+    if not intent.requirements:
+        raise ValueError("No approved requirements can be evaluated reliably")
     result = await provider.generate_structured({"intent": intent.model_dump(mode="json"),
         "answers": [a.model_dump(mode="json") for a in answers], "phase": phase}, Evaluation, "evaluate")
     expected = {r.requirement_id: r.text for r in intent.requirements}

@@ -339,3 +339,8 @@ No unresolved product choice is assumed. This technical specification is approve
 ## Authorized Replay Quality-Defect Amendment
 
 Replay requires a genuine, unmanipulated response containing at least one material quality defect that PickyLens can identify and demonstrate meaningfully, such as an omission, contradiction, inconsistency, or unresolved uncertainty. Preserve the response exactly as captured and retain provenance. Never insert or manufacture a defect or hardcode an expected Replay assessment. Partial means addressed but materially inconsistent or unreliable; Needs review means evidence is insufficient to establish whether an apparent inconsistency is real.
+
+
+### Slice 3 Implementation Mapping
+
+Slice 3 implementation route mapping: /retry and the failed stage endpoint support explicit retries; /pause and /resume preserve nonterminal work; /resolve reassesses existing uncertainty evidence; /approve-uncertainty authorizes targeted question generation; /finish-review records the qualified terminal outcome. These concrete action names implement the recovery and uncertainty contracts above without changing product behavior. Run one application process per SQLite instance for startup interruption recovery.

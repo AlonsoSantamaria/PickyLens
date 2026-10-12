@@ -9,7 +9,7 @@ from app.config import load_settings
 from app.providers.openai_adapter import OpenAIProvider
 from app.services.replay import load_fixture
 from app.storage.repository import Repository, Conflict
-from app.services.interactions import Interactions
+from app.services.interactions import Interactions, StageFailure
 from app.services.scenario import PROMPT, DESCRIPTION
 
 BASE = Path(__file__).parent
@@ -29,11 +29,16 @@ def create_app(provider=None, db_path=None):
     settings = load_settings()
     provider = provider or (OpenAIProvider(settings) if settings.api_key.get_secret_value() else UnconfiguredProvider())
     repository = Repository(db_path or load_settings().db_path)
+    repository.recover_interrupted()
     service = Interactions(repository, provider)
     app = FastAPI(title="PickyLens")
     app.state.repository, app.state.provider = repository, provider
     templates = Jinja2Templates(directory=str(BASE / "templates"))
     app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
+
+    @app.exception_handler(StageFailure)
+    async def stage_failure(request, exc):
+        return JSONResponse({"detail": str(exc), "snapshot": exc.snapshot.model_dump(mode="json")}, status_code=exc.status_code)
 
     @app.exception_handler(KeyError)
     async def missing(request, exc):
@@ -41,7 +46,14 @@ def create_app(provider=None, db_path=None):
 
     @app.exception_handler(Conflict)
     async def conflict(request, exc):
-        return JSONResponse({"detail": str(exc)}, status_code=409)
+        data = {"detail": str(exc)}
+        id = request.path_params.get("id")
+        if id:
+            try:
+                data["snapshot"] = repository.get(id).model_dump(mode="json")
+            except KeyError:
+                pass
+        return JSONResponse(data, status_code=409)
 
     @app.exception_handler(ValueError)
     async def invalid(request, exc):

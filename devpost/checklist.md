@@ -105,3 +105,15 @@ Status: officially recorded, deferred, not implemented. Outside the MVP and curr
 - 29 deterministic tests pass; real Uvicorn workspace/History HTTP checks pass. Replay replaces only first-answer acquisition; structured compatibility makes no AI call.
 - Exactly one additional live POST call; no live NEXT/follow-up/VERIFY in this batch. Those stages were verified deterministically, not claimed as live semantic success.
 - Stop after Slice 2 per learner instruction. No Slice 3 or Gemini stretch implementation. Final-polish guidance remains deferred.
+
+
+## Slice 3 verification evidence
+
+- Slice 2 learner approval recorded; its completion checkbox and checkpoint commits were already saved. Replay fixture/provenance bytes remain unchanged.
+- Added durable pending/failed operation data, idempotent claim lookup before revision checks, explicit retry, startup interruption recovery, pause/resume, sanitized stage failures, and trace-only late results. No provider call occurs inside a SQLite write transaction.
+- Request edits and edited improved prompts return to PRE, clear current dependent results, and establish a fresh intent version only after approval. Safe mode changes preserve intent and keep superseded evidence.
+- Uncertainty is reassessed from existing evidence before optional human-approved question targeting. No automatic repair for uncertainty-only or already-complete results. Qualified endings and complete records are terminal/read-only.
+- 46 deterministic tests pass, including failure/retry at each model-backed stage, duplicate delivery, interrupted restart, delayed answers and POST, expected-revision conflicts, append-only guards, Red override, terminal boundaries, and empty input.
+- Browser verification with an isolated stub database confirmed pause, reload, resume, request revision, and read-only History showing the old response explicitly labeled Superseded evidence. JavaScript syntax check passed.
+- Zero live model calls. No fixture changes, product expansion, or Gemini integration. Slice 4/final polish has not started.
+- Internal HTTP implementation uses explicit /retry, /pause, /resolve, /approve-uncertainty, and /finish-review actions alongside the existing stage endpoints. This is a route naming refinement of the approved recovery/uncertainty behavior, not a product change. The failed stage endpoint also accepts an explicit retry with a new operation ID.

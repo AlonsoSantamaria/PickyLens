@@ -34,9 +34,9 @@ class Repository:
     def trace(self, id):
         with self.connect() as db:
             rows = db.execute("SELECT event_type, timestamp, payload_json FROM interaction_events WHERE interaction_id=? ORDER BY sequence_number", (id,)).fetchall()
-        return [{"type": r[0], "timestamp": r[1], "snapshot": EventPayload.model_validate_json(r[2]).snapshot} for r in rows]
+        return [{"type": r[0], "timestamp": r[1], "snapshot": EventPayload.model_validate_json(r[2]).snapshot, "superseded": EventPayload.model_validate_json(r[2]).superseded_snapshot} for r in rows]
 
-    def save(self, snapshot, event_type, operation_id, expected_revision=None, claim=False):
+    def save(self, snapshot, event_type, operation_id, expected_revision=None, claim=False, signature=None, superseded=None):
         snapshot = Snapshot.model_validate(snapshot.model_dump(warnings=False))
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -46,7 +46,7 @@ class Repository:
             snapshot.revision = (previous[0] if previous else 0) + 1
             snapshot.last_event_sequence += 1
             snapshot.updated_at = now()
-            payload = EventPayload(snapshot=snapshot, operation_id=operation_id).model_dump_json()
+            payload = EventPayload(snapshot=snapshot, operation_id=operation_id, request_signature=signature, superseded_snapshot=superseded).model_dump_json()
             db.execute("INSERT INTO interactions VALUES (?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(interaction_id) DO UPDATE SET schema_version=excluded.schema_version,title=excluded.title,mode=excluded.mode,stage=excluded.stage,lifecycle_status=excluded.lifecycle_status,current_intent_version=excluded.current_intent_version,revision=excluded.revision,last_event_sequence=excluded.last_event_sequence,updated_at=excluded.updated_at,snapshot_json=excluded.snapshot_json", (
                 snapshot.interaction_id, snapshot.schema_version, snapshot.title, snapshot.mode, snapshot.stage,
                 snapshot.lifecycle_status, snapshot.intent.version if snapshot.intent else None, snapshot.revision,
@@ -55,3 +55,49 @@ class Repository:
                 uid(), snapshot.interaction_id, event_type, snapshot.last_event_sequence, snapshot.updated_at,
                 operation_id if claim else None, snapshot.intent.version if snapshot.intent else None, 1, payload))
         return snapshot
+
+    def duplicate(self, operation_id, signature, interaction_id=None):
+        with self.connect() as db:
+            row = db.execute("SELECT interaction_id,payload_json FROM interaction_events WHERE operation_id=?", (operation_id,)).fetchone()
+            if not row:
+                return None
+            payload = EventPayload.model_validate_json(row[1])
+            if payload.request_signature != signature or (interaction_id and row[0] != interaction_id):
+                raise Conflict("Operation ID was already used for a different action.")
+            current = self.get(row[0])
+            if current.pending_operation == operation_id:
+                return current
+            rows = db.execute("SELECT payload_json FROM interaction_events WHERE interaction_id=? ORDER BY sequence_number DESC", (row[0],)).fetchall()
+            for result in rows:
+                event = EventPayload.model_validate_json(result[0])
+                if event.operation_id == operation_id:
+                    return event.snapshot
+            return payload.snapshot
+
+    def finish(self, result, operation_id, event_type):
+        for attempt in range(5):
+            try:
+                return self._finish(result, operation_id, event_type)
+            except Conflict:
+                if attempt == 4:
+                    raise
+
+    def _finish(self, result, operation_id, event_type):
+        # The operation token survives trace-only revision changes, but not supersession.
+        current = self.get(result.interaction_id)
+        if current.pending_operation != operation_id:
+            return self.save(current, "superseded_result", operation_id, current.revision, superseded=result)
+        result.revision = current.revision
+        result.last_event_sequence = current.last_event_sequence
+        result.pending_operation = result.pending_action = None
+        return self.save(result, event_type, operation_id, current.revision)
+
+    def recover_interrupted(self):
+        for snapshot in self.list():
+            if snapshot.pending_operation:
+                op = snapshot.pending_operation
+                snapshot.failed_action = snapshot.pending_action
+                snapshot.failure = "Operation interrupted. Completed work is saved; retry explicitly."
+                snapshot.lifecycle_status = "Interrupted"
+                snapshot.pending_operation = snapshot.pending_action = None
+                self.save(snapshot, "operation_interrupted", op, snapshot.revision)

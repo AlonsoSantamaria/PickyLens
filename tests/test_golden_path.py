@@ -145,7 +145,7 @@ def test_first_pre_failure_preserves_request(tmp_path):
     app = create_app(Broken(), tmp_path / "failure.sqlite3")
     client = TestClient(app)
     response = client.post("/api/interactions/pre", json={"operation_id": str(uuid4()), "request_text": PROMPT})
-    assert response.status_code == 422
+    assert response.status_code == 502
     saved = app.state.repository.list()[0]
     assert saved.original_request == PROMPT.strip() and saved.lifecycle_status == "Failed at PRE"
     assert saved.pre is None and "PRE" in saved.failure

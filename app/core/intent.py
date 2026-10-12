@@ -18,5 +18,5 @@ def approve(snapshot, action):
     for key, value in accepted.items():
         requirements.append(Requirement(text=f"Accepted {key}: {value}", source="accepted_clarification"))
         prompt += f"\nAccepted {key}: {value}"
-    return ApprovedIntent(version=1, original_request=snapshot.original_request, approved_prompt=prompt,
+    return ApprovedIntent(version=snapshot.revision, original_request=snapshot.current_request, approved_prompt=prompt,
                           approval_action=action.choice, accepted_clarifications=accepted, requirements=requirements)
