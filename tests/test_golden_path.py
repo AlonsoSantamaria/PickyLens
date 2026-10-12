@@ -70,7 +70,7 @@ def test_full_golden_path_and_restart(setup):
     assert resolved["evidence"][0]["response_id"] == s["followup_answer"]["response_id"]
     detail = reopened.get(f"/interactions/{s['interaction_id']}")
     assert detail.status_code == 200 and "Resume interaction" not in detail.text
-    assert edited in detail.text and "Post Completed" in detail.text
+    assert edited in detail.text and "Answer checked" in detail.text
     assert reopened.get(f"/?interaction={s['interaction_id']}", follow_redirects=False).status_code == 307
     assert len(Repository(db).list()) == 1
     with sqlite3.connect(db) as connection:

@@ -28,9 +28,11 @@ Sources: `scope.md > The Core Loop` and `What "Working" Looks Like`; learner's e
 
 At the top: PickyLens, "Quality-check the whole AI interaction.", and a compact Replay Demo / Live Model control. Replay Demo is the initial mode.
 
-The larger left area contains "Demo scenario: Management consultant", a brief explanation of comparing two operational alternatives, and a large editable prompt prefilled with the imperfect request. "Review with PickyLens" is the primary action below the editor. The review path is visually emphasized.
+The desktop workspace is an approximately 50/50 workbench: left is what the user asks; right is what the AI returns. The left holds the editable original request, request review, clarifications, improved/approved request, and targeted follow-up. The right holds the AI answer, requirement/evidence review, follow-up answer, and verification. The initial right side contains only an honest empty state.
 
-The smaller right area is the reviewer panel. Initially it contains an understated PRE -> AI -> POST -> NEXT indicator with PRE highlighted and "Ready to review your request." It contains no fabricated findings. The panel presents findings and actions as the interaction progresses. After the first AI answer, the answer appears normally in the main workspace and the panel moves to POST. Final verification has a distinct VERIFY state without requiring a large process diagram.
+Human-language stages dominate: Review request, AI answer, Check answer, Fix gaps, Confirm. PRE / AI / POST / NEXT / VERIFY may remain secondary labels. When an answer arrives, transfer focus to its heading on the right, cue reading, and place Check this answer beneath the response. Do not require a read confirmation. Keep one primary next action beside the content it acts on. Follow-up generation moves attention left; its response and Verify result action belong on the right. Show actual dynamic before/after counts and unchanged evidence.
+
+First-use guidance briefly explains left=request, right=answer, and PickyLens checks both. On narrow screens stack request/action, answer/review, follow-up prompt, follow-up answer/verification in that order. History retains all information and traceability while using human-language stage labels. This learner-authorized final-review refinement changes presentation only.
 
 ### Interactions
 
@@ -257,3 +259,7 @@ Review format: canonical Markdown plus a visual HTML companion, as requested by 
 ## Authorized Replay Quality-Defect Amendment
 
 Replay requires a genuine, unmanipulated response containing at least one material quality defect that PickyLens can identify and demonstrate meaningfully, such as an omission, contradiction, inconsistency, or unresolved uncertainty. Preserve the response exactly as captured and retain provenance. Never insert or manufacture a defect or hardcode an expected Replay assessment. Partial means addressed but materially inconsistent or unreliable; Needs review means evidence is insufficient to establish whether an apparent inconsistency is real.
+
+## Authorized New-Case and Active-Case Orientation
+
+New cases retain the full introduction, first-use guide, human-language process, and two-sided workbench headings until Review my request begins. Active cases collapse introductory decoration and retain a compact sticky header/navigation/mode control, process progress with current/completed/future states, and request/answer orientation links. Narrow screens use shorter orientation labels and hide secondary methodology abbreviations. Starting a new case automatically restores the full introduction. This is presentation derived from interaction state, with no preference, persistence, provider, or recovery change.

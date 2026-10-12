@@ -56,13 +56,13 @@ Checkpoint state: Learner approved Slice 1 hands-on review and continuation. No 
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 1, before slice 2; record actual learner feedback and verified fixes.
-- [ ] Final kick-the-tires exploration and feedback completed — after slice 4; cover the integrated quality loop and History without a redundant middle checkpoint.
+- [x] Final kick-the-tires exploration and feedback completed — after slice 4; cover the integrated quality loop and History without a redundant middle checkpoint.
 
 ## Final Review
 
-- [ ] Add lightweight first-use guidance for PRE -> AI -> POST -> NEXT -> VERIFY during final polish: contextual step cues and concise helper text, without a heavy tutorial. Requested after Slice 1; do not interrupt Slice 2.
+- [x] Add lightweight first-use guidance for PRE -> AI -> POST -> NEXT -> VERIFY during final polish: contextual step cues and concise helper text, without a heavy tutorial. Requested after Slice 1; do not interrupt Slice 2.
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
 
@@ -117,3 +117,41 @@ Status: officially recorded, deferred, not implemented. Outside the MVP and curr
 - Browser verification with an isolated stub database confirmed pause, reload, resume, request revision, and read-only History showing the old response explicitly labeled Superseded evidence. JavaScript syntax check passed.
 - Zero live model calls. No fixture changes, product expansion, or Gemini integration. Slice 4/final polish has not started.
 - Internal HTTP implementation uses explicit /retry, /pause, /resolve, /approve-uncertainty, and /finish-review actions alongside the existing stage endpoints. This is a route naming refinement of the approved recovery/uncertainty behavior, not a product change. The failed stage endpoint also accepts an explicit retry with a new operation ID.
+
+
+## Slice 4 final hands-on checkpoint
+
+Slice 3 learner approval recorded; its completion checkbox was already saved. Slice 4 implementation and mechanical verification are ready. The slice checkbox/commit and final-review acceptance remain pending the planned hands-on feedback, following the 5-build loop order. The first-use guidance refinement is implemented and awaiting learner review. No claim of full 5-build completion is made; the learning wrap-up/app map also remain pending.
+
+Changes: compact expandable first-use guide; stage-specific helper text; clearer request/response actions and requirement counts; terminal mode control disabled; readable History stage details instead of raw JSON; local timestamps; responsive wrapping and free-text input styling; current README setup/run/recovery and protected VESTA environment guidance.
+
+Evidence: all 49 deterministic tests pass (0 failures), JavaScript syntax and Git whitespace checks pass. Browser completed PRE, accepted clarification, approved prompt, answer, POST (8 Complete/1 Missing), generated and edited NEXT, pause/reload/resume, follow-up, VERIFY (9 Complete), and terminal History with no Resume. Resolved evidence cites the follow-up. Desktop and 390px stacked layouts inspected; no horizontal overflow or browser error/warning logs observed.
+
+Replay/Live compatibility, switching, first-response-only substitution, and recovery boundaries passed automated integration tests. Offline revalidation of the stored genuine live POST against the unchanged capture yielded 4 Complete/4 Partial with valid exact quotations. This reuses saved evidence, not a fresh semantic evaluation. Runtime assessments remain dynamic; test expectations are isolated from production code. No live calls were made; cumulative capture ledger remains eight calls. The fixture's on-disk SHA-256 remains 75dcd41aea1591ccce90e5dff4307b6680a974bdb9872e56f6374aea297794e3.
+
+Privacy/setup: .env.example uses blank credentials and safe defaults; .env, runtime SQLite, private learner profile, and local captures are ignored and untracked. The versioned genuine fixture is intentionally tracked. VESTA's external /etc/neovantia/secrets/pickylens/runtime.env and proxy access protection remain documented; no deployment or Gemini work was started.
+
+Learner check: use the no-live-call test runner or the real app as documented in README. Expand the guide; complete the loop and inspect evidence; pause/reload/resume before completion; inspect read-only terminal History; try a narrower browser. Report what felt confusing or broken and what should change. Final acceptance is pending.
+
+
+## Requested workbench UX revision — awaiting final review
+
+Learner rejected the first Slice 4 interface during hands-on review and authorized an approximately 50/50 request/answer workbench. Implementation now places request review, clarifications, approved request and follow-up on the left; first answer, answer check/evidence, follow-up response and verification on the right. Human-language stages dominate, with methodology abbreviations secondary. New answers receive focus and a reading cue; Check this answer sits beneath the answer, without a read-confirmation gate. Follow-up and verification actions sit next to their content. The compact guide explains the two sides. History uses matching human-language labels. PRD/spec and companions are aligned with this authorized presentation refinement; underlying approvals remain unchanged.
+
+Verified in a full deterministic browser journey: request review, accepted clarification, improved request, answer reading focus, answer check, follow-up generation on the left, edited draft save, pause/reload/resume, follow-up answer focus on the right, result verification, before/after counts, and read-only terminal History. Desktop columns measured approximately 549.5px each. At 390px, the single-column section order is request, answer/check, follow-up prompt, follow-up answer/verification, with no horizontal overflow. Browser logs had no warnings/errors.
+
+The genuine saved Replay response and its prior live assessment were also inspected offline in an isolated test record. Actual 4 Complete/4 Partial counts, requirement explanation, and exact conflicting cost quotations were visible in the answer review. This was saved-evidence presentation validation, not a new live semantic evaluation. The production fixture/provenance are unchanged. No backend, evaluator, provider, persistence, intent, or recovery changes were made in this UX revision.
+
+Slice 4 and 5-build remain unapproved/incomplete pending learner review, checkpoint commit and final learning wrap-up. Gemini and 6-ship remain unstarted.
+
+## Active-case orientation refinement — awaiting hands-on review
+
+- [x] Learner confirms full new-case orientation and compact persistent active-case orientation.
+
+New cases retain the full introduction, first-use guide, human-language process, and two-sided workbench headings until Review my request begins. Active cases collapse introductory decoration and retain a compact sticky header/navigation/mode control, process progress with current/completed/future states, and request/answer orientation links. Narrow screens use shorter orientation labels and hide secondary methodology abbreviations. Starting a new case automatically restores the full introduction. This is presentation derived from interaction state, with no preference, persistence, provider, or recovery change.
+
+Deterministic browser verification completed the full review/approval/answer/check/follow-up/verification journey (7 Complete and 1 Missing to 8 Complete). Edited follow-up survived pause, read-only History inspection, and resume. Terminal History offers no Resume. Sticky orientation stayed aligned beneath the header during long-page scrolling on desktop and at 390px; combined sticky height was approximately 135px desktop and 113px narrow, without horizontal overflow. New case restored the complete introduction and initial process. No live calls or core/state/provider/fixture changes. Slice 4 and 5-build remain incomplete pending learner review.
+
+## Final learner acceptance — 2026-10-12
+
+The learner explicitly approved Slice 4 after retrying the revised interface. Full initial orientation, compact active workspace, two-sided request/answer presentation, and contextual next actions passed the final hands-on review. Earlier pending-review entries above are historical checkpoint evidence and are superseded by this acceptance. No further product changes requested. Gemini and 6-ship remain deferred.

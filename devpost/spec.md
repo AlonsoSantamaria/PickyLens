@@ -344,3 +344,12 @@ Replay requires a genuine, unmanipulated response containing at least one materi
 ### Slice 3 Implementation Mapping
 
 Slice 3 implementation route mapping: /retry and the failed stage endpoint support explicit retries; /pause and /resume preserve nonterminal work; /resolve reassesses existing uncertainty evidence; /approve-uncertainty authorizes targeted question generation; /finish-review records the qualified terminal outcome. These concrete action names implement the recovery and uncertainty contracts above without changing product behavior. Run one application process per SQLite instance for startup interruption recovery.
+
+
+### Authorized Workbench Presentation Refinement
+
+Final-review presentation refinement: an approximately equal-width request/answer workbench replaces the reviewer sidebar. Native DOM order is request/review, answer/check, follow-up prompt, follow-up answer/verification; CSS places request content left and response content right on desktop and stacks it on narrow screens. Focus/scroll cues move to newly received answers without a read-confirmation gate. Human-language actions map to unchanged internal stages and endpoints. Core semantics, persistence, recovery, provider behavior, and Replay provenance remain unchanged.
+
+## Authorized New-Case and Active-Case Orientation
+
+New cases retain the full introduction, first-use guide, human-language process, and two-sided workbench headings until Review my request begins. Active cases collapse introductory decoration and retain a compact sticky header/navigation/mode control, process progress with current/completed/future states, and request/answer orientation links. Narrow screens use shorter orientation labels and hide secondary methodology abbreviations. Starting a new case automatically restores the full introduction. This is presentation derived from interaction state, with no preference, persistence, provider, or recovery change.

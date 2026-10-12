@@ -1,13 +1,18 @@
 {% extends "base.html" %}{% block content %}
-<div class="workspace"><section class="work"><div class="eyebrow">Demo scenario: Management consultant</div><h1>Make the recommendation count.</h1><p class="muted">{{ description }}</p>
-<label for="mode">Response mode</label><select id="mode" {% if stub %}disabled{% endif %}>{% if stub %}<option value="live">Development stub - synthetic</option>{% else %}<option value="replay">Replay Demo</option><option value="live">Live Model</option>{% endif %}</select>
-<label for="request">Your request</label><textarea id="request" rows="13" {% if snapshot %}readonly{% endif %}>{{ prompt }}</textarea>
-<p class="muted small">{% if snapshot %}Use Edit request to revise intent. Previous results remain in the trace as superseded evidence.{% elif stub %}The development stub follows the prefilled scenario only; edits are stored but are not semantically reviewed by this stub.{% else %}Replay uses a genuine captured first answer. Reviews and follow-up calls run dynamically.{% endif %}</p>
-<button id="start" {% if snapshot %}hidden{% endif %}>Review with PickyLens</button><span id="saved" aria-live="polite"></span>
-<section id="first-answer" hidden><h2>AI response</h2><div class="answer-label">{{ "Synthetic development response" if stub else "AI response - provenance shown below" }}</div><pre id="answer"></pre></section>
-<section id="followup-answer" hidden><h2>Follow-up response</h2><pre id="followup"></pre></section></section>
-<aside class="reviewer"><div class="eyebrow">Your quiet reviewer</div><ol id="progress" aria-label="Interaction stages"><li>PRE</li><li>AI</li><li>POST</li><li>NEXT</li><li>VERIFY</li></ol>
-<div id="error" role="alert" hidden></div><div id="panel" aria-live="polite"></div></aside></div>
-<script id="canonical-demo" type="application/json">{{ demo|tojson }}</script>
-<script id="initial-state" type="application/json">{{ (snapshot.model_dump(mode='json') if snapshot else none)|tojson }}</script>
-<script charset="utf-8" src="/static/workspace.js?v=slice2" defer></script>{% endblock %}
+<div class="workbench-intro"><div><div class="eyebrow">Demo scenario: Management consultant</div><h1>What you asked. What you got.</h1><p class="muted">{{ description }}</p></div><div id="new-mode-slot"><div class="mode-control"><label for="mode">Response mode</label><select id="mode" {% if stub %}disabled{% endif %}>{% if stub %}<option value="live">Development stub - synthetic</option>{% else %}<option value="replay">Replay Demo</option><option value="live">Live Model</option>{% endif %}</select></div></div></div>
+<details class="quick-guide"><summary>A quick guide to the workbench</summary><p><strong>Left: what you ask.</strong> <strong>Right: what the AI gives you.</strong> PickyLens helps check both before and after. Read the answer, check the evidence, then repair only what needs attention. Nothing is sent without your action.</p></details>
+<div id="case-orientation"><ol id="progress" aria-label="Interaction stages"><li data-stage="pre"><strong>Review request</strong><small>PRE</small></li><li data-stage="ai"><strong>AI answer</strong><small>AI</small></li><li data-stage="post"><strong>Check answer</strong><small>POST</small></li><li data-stage="next"><strong>Fix gaps</strong><small>NEXT</small></li><li data-stage="verify"><strong>Confirm</strong><small>VERIFY</small></li></ol><div class="persistent-sides" aria-label="Workbench orientation"><a href="#request-side">What I asked <span>· Request</span></a><a href="#answer-side">What I got <span>· AI answer</span></a></div></div>
+<div id="error" role="alert" hidden></div><div id="recovery" aria-live="polite"></div>
+<div class="workbench">
+<section id="request-side" class="request-side"><div class="eyebrow">What I asked</div><h2>Your request</h2>
+<label class="visually-hidden" for="request">Your request</label><textarea id="request" rows="13" {% if snapshot %}readonly{% endif %}>{{ prompt }}</textarea>
+<button id="start" {% if snapshot %}hidden{% endif %}>Review my request</button><span id="saved" aria-live="polite"></span>
+<div id="request-tools"></div><div id="request-review" aria-live="polite"></div></section>
+<section id="answer-side" class="answer-side"><div class="eyebrow">What I got</div><h2 id="answer-heading" tabindex="-1">AI answer</h2>
+<div id="answer-placeholder" class="answer-placeholder"><p>Your AI answer will appear here.</p><p class="muted small">Start with your request on the left. You choose what is sent.</p></div>
+<section id="first-answer" hidden><p id="answer-cue" class="reading-cue">Read the answer first. Then PickyLens can check it against what you asked for.</p><div class="answer-label"></div><pre id="answer"></pre></section>
+<div id="answer-review" aria-live="polite"></div></section>
+<section id="repair-side" class="repair-side" hidden><div class="eyebrow">What I ask next</div><h2 id="repair-heading" tabindex="-1">Targeted follow-up</h2><div id="repair-panel" aria-live="polite"></div></section>
+<section id="followup-side" class="followup-side" hidden><div class="eyebrow">What I got next</div><h2 id="followup-heading" tabindex="-1">Follow-up AI answer</h2><section id="followup-answer" hidden><pre id="followup"></pre></section><div id="verification-panel" aria-live="polite"></div></section>
+</div>
+<script id="canonical-demo" type="application/json">{{ demo|tojson }}</script><script id="initial-state" type="application/json">{{ (snapshot.model_dump(mode='json') if snapshot else none)|tojson }}</script><script charset="utf-8" src="/static/workspace.js?v=orientation2" defer></script>{% endblock %}
