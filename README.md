@@ -83,3 +83,7 @@ Known limits: one shared History, no accounts; conservative Replay compatibility
 ### Revised workbench hands-on path
 
 The desktop view uses equal request/answer columns. Start with Review my request on the left. After approval, send the request (or load the captured Replay response). Attention moves to AI answer ready on the right: read it, then use Check this answer below it. Fix only what's missing prepares a follow-up on the left. Send follow-up returns a new answer on the right; Verify result shows actual before/after counts. On narrow screens those sections stack in interaction order. The learner approved this interface, including full new-case orientation and compact persistent active-case orientation.
+
+## Build completion and reference map
+
+All four build slices, final hands-on review, and the Skill Pack learning wrap-up are complete. Open [the standalone app map](devpost/app-map.html) locally for the finished code route and reusable verification practice. Planning documents remain approved; completion and test evidence are recorded in [the build checklist](devpost/checklist.md). Gemini and 6-ship require separate approval and have not started.

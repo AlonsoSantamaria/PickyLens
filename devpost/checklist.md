@@ -39,7 +39,7 @@ Build mode: fast — selected by the learner; mechanical verification remains ma
   Learner check: Pause or fail an interaction, reopen it through History, and resume at the preserved stage. Revise an earlier request and inspect superseded evidence. Confirm terminal records have no Resume and Needs review is never presented as confident success.
   Commit: `Complete interaction recovery uncertainty and supersession rules`
 
-- [ ] **4. Verify the complete local POC and prepare it for final review**
+- [x] **4. Verify the complete local POC and prepare it for final review**
   Becomes usable: The approved flow is runnable from documented local commands, with compact responsive presentation, inspectable evidence, and clear setup/fixture limitations.
   Why now: Checks the assembled user journey after its state rules are complete and prepares an honest hands-on review without starting submission or deployment work.
   PRD ref: `prd.md > Screens and Layout`, `Look and Feel`, `The Core Journey`, `What We're Building`, `Non-Goals`
@@ -66,15 +66,15 @@ Checkpoint state: Learner approved Slice 1 hands-on review and continuation. No 
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — focused investigation of provider independence and evidence validation using actual finished code/tests
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — focused investigation of provider independence and evidence validation using actual finished code/tests
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: Pending final review; use the learner's goal of delegation through specifications and a provider-neutral core.
-Route and stops: Pending finished implementation; reference actual code and test locations only.
-Edit outcome: Not yet offered.
-Reflection: Not yet offered; any personal response belongs only in the ignored learner profile.
-Activity mode: Focused alternative for an experienced plan-first user; perform once after final revisions.
+Activity and evidence: Focused evidence-based recap of the completed Replay investigation: learner-authorized material-defect amendment, generic contradiction handling, deterministic consistency/evidence tests, and bounded live POST validation. The recap distinguished mechanical guarantees from model judgment. This reuses actual build participation rather than claiming a new interactive exercise.
+Route and stops: Reference route (not interactively toured): app/services/interactions.py > Interactions.run; app/core/evaluation.py > evaluate; app/storage/repository.py > Repository.finish. Provider independence is defined in app/providers/base.py; tests/test_replay_flow.py verifies that only the first answer is replaced. All paths/anchors checked against source.
+Edit outcome: Not applicable for the focused alternative; no additional product edit needed after final approval.
+Reflection: Optional transfer question offered during closeout; no answer recorded at closeout and no response required. No personal reflection invented.
+Activity mode: Focused alternative completed once after final revisions. Standalone app-map.html generated, opened and visually checked; no scripts or external assets. Source snapshot: 3f1c8b6bc54aaaf8601b200a4a529e4c77167aa4.
 
 ## Revisions
 
@@ -155,3 +155,13 @@ Deterministic browser verification completed the full review/approval/answer/che
 ## Final learner acceptance — 2026-10-12
 
 The learner explicitly approved Slice 4 after retrying the revised interface. Full initial orientation, compact active workspace, two-sided request/answer presentation, and contextual next actions passed the final hands-on review. Earlier pending-review entries above are historical checkpoint evidence and are superseded by this acceptance. No further product changes requested. Gemini and 6-ship remain deferred.
+
+## 5-build closeout — 2026-10-12
+
+All four slices and the final learner review are complete. Slice 4 implementation checkpoint: 3f1c8b6. Learning wrap-up and app map are complete as recorded above. Historical pending statements describe earlier checkpoints only. Scope, PRD, spec and checklist retain status: approved.
+
+Final verification: 49 deterministic tests passed (0 failures); JavaScript syntax and Git whitespace checks passed. The documented real application started under Uvicorn using an isolated local SQLite database; workspace and History returned HTTP 200 without model actions. Prior full browser evidence and the learner's final approval cover the complete journey, 390px/mobile and desktop layouts, long-page sticky orientation, new-case restoration, History and pause/resume. Offline map links and actual code anchors validated; rendered map checked. Genuine Replay fixture SHA-256 remains 75dcd41aea1591ccce90e5dff4307b6680a974bdb9872e56f6374aea297794e3. Zero closeout live calls; prior live evidence/provenance retained unchanged.
+
+Staging excludes credentials, runtime data, captures and the private learner profile. Pre-existing local skill installations remain untouched and are excluded through repository-local .git/info/exclude; legacy Claude linkage remains untouched. No submission/publication audit or deployment was performed.
+
+5-build is formally complete. Next installed workflow step: 6-ship, to prepare the demo video/public repository and submission, only after explicit learner approval. Gemini remains an unimplemented, deferred stretch goal.
