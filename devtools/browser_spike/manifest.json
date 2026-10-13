@@ -8,9 +8,17 @@
         "https://gemini.google.com/*"
       ],
       "js": [
+        "gemini-host.js",
+        "lifecycle.js",
         "probe.js"
       ],
       "run_at": "document_start"
     }
-  ]
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  }
 }
