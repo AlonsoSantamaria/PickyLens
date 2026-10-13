@@ -1,0 +1,25 @@
+{
+  "pickylens-compat-probe": {
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "C:/__Dev/Neovantia/Apps/PickyLens/.venv/Scripts/python.exe C:/__Dev/Neovantia/Apps/PickyLens/devtools/antigravity_probe/probe.py",
+        "timeout": 5
+      }
+    ],
+    "PostInvocation": [
+      {
+        "type": "command",
+        "command": "C:/__Dev/Neovantia/Apps/PickyLens/.venv/Scripts/python.exe C:/__Dev/Neovantia/Apps/PickyLens/devtools/antigravity_probe/probe.py",
+        "timeout": 5
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "C:/__Dev/Neovantia/Apps/PickyLens/.venv/Scripts/python.exe C:/__Dev/Neovantia/Apps/PickyLens/devtools/antigravity_probe/probe.py",
+        "timeout": 5
+      }
+    ]
+  }
+}
