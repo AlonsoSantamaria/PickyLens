@@ -50,4 +50,3 @@
   const start=()=>{mount();new MutationObserver(mount).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-busy']});};
   if(document.documentElement) start();else document.addEventListener('DOMContentLoaded',start,{once:true});
 })();
-
