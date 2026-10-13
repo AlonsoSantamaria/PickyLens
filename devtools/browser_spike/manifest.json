@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "PickyLens feasibility probe",
+  "version": "0.0.1",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://gemini.google.com/*"
+      ],
+      "js": [
+        "probe.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}
