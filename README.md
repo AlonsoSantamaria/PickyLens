@@ -105,3 +105,7 @@ Read an existing interaction without model calls:
 ```
 
 `devtools.public_live_verify` is a one-attempt, six-call validation harness that uses normal API actions and refuses an existing evidence directory. It requires explicit live-call authorization; do not rerun or remove its evidence directory to obtain another attempt.
+
+## Gemini CLI extension v0.1 — deterministic checkpoint
+
+The separately approved Gemini milestone now has a thin local adapter with BeforeAgent request review, AfterAgent answer review, a technical manual fallback and separate experimental storage. See [extension setup and boundaries](extensions/pickylens/README.md) and [the deterministic checkpoint](devpost/gemini-extension-checkpoint.md). Earlier statements that Gemini had not started describe the completed 5-build milestone. Live Gemini/OpenAI validation is still pending separate approval; 6-ship has not started.

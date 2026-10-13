@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "BeforeAgent": [{"hooks": [{"name": "pickylens-request-review", "type": "command", "command": "node \"${extensionPath}/bridge.cjs\"", "timeout": 55000}]}],
+    "AfterAgent": [{"hooks": [{"name": "pickylens-answer-review", "type": "command", "command": "node \"${extensionPath}/bridge.cjs\"", "timeout": 55000}]}]
+  }
+}
