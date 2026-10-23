@@ -127,3 +127,10 @@ The operator packages one exact deployed HTTPS backend origin using `python -m d
 Privacy: Web interactions and evidence are saved in server SQLite for shared controlled-demo History. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
 
 Final browser acceptance, minimal live validation, HTTPS deployment and 6-ship remain pending; this section does not claim they have passed.
+
+
+### Global token circuit breaker
+
+`PICKYLENS_GLOBAL_TOKEN_BUDGET=2000000` adds a cumulative input-plus-output token ceiling alongside the call ceiling. Each call atomically reserves 300,000 tokens; known usage settles to the reported total. Unknown usage (including interrupted calls) retains its reservation. Concurrent pending calls therefore consume capacity before invoking OpenAI. The provider bounds serialized input/schema size and output tokens; admission may stop conservatively with unused budget below a full reservation. Persist the ledger across restarts. Set the global token budget to zero for an immediate fail-closed stop. Reservations preserve model, purpose, latency and usage metadata; model reasoning configuration remains in protected runtime configuration and validation evidence.
+
+Canonical deployment target: https://pickylens.neovantia.live, with API paths on the same origin. This is the intended hostname, not a deployment-success claim.

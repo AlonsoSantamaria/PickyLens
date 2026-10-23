@@ -114,3 +114,19 @@ def test_failed_call_consumes_allowance(tmp_path):
         with pytest.raises(AccessDenied):asyncio.run(provider.generate_text({'prompt':'Task'},'answer'))
         assert raw.calls==1
     finally:principal.reset(ctx)
+
+def test_token_ceiling_reservation_and_settlement(tmp_path):
+    from app.core.contracts import ModelCall
+    access=JudgeAccess(tmp_path/'tokens.db',global_limit=30,token_limit=300100)
+    ctx=principal.set(access.validate(access.issue(30)))
+    try:
+        reservation=access.reserve()
+        with pytest.raises(AccessDenied):access.reserve()
+        access.settle(reservation,[ModelCall(provider='test',model='test',purpose='pre',total_tokens=100)])
+        pending=access.reserve()
+        with pytest.raises(AccessDenied):access.reserve()
+        access.settle(pending,[])
+        with pytest.raises(AccessDenied):access.reserve()
+        restarted=JudgeAccess(tmp_path/'tokens.db',global_limit=30,token_limit=300100)
+        with pytest.raises(AccessDenied):restarted.reserve()
+    finally:principal.reset(ctx)

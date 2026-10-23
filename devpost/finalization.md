@@ -30,3 +30,25 @@ The public HTTPS origin has not been selected/verified in repository evidence. D
 “Most tools optimize the request or evaluate the model. PickyLens supervises the interaction end to end.”
 “PickyLens checks whether the AI actually delivered what you asked for — and fixes only what’s missing.”
 Working product first in the demo; no long trailer or architecture preamble.
+
+## Authorized live validation — 2026-10-23
+
+Canonical VESTA hostname approved by learner: https://pickylens.neovantia.live (same-origin API). Deployment has not yet occurred.
+
+Web live API acceptance passed with no retries or repair: PRE green; POST 5 complete, 0 partial, 0 missing, 0 needs_review. History endpoint and public no-Replay page checks passed. This is API acceptance, not a claim of a completed browser hands-on review.
+
+| Call | Purpose | Model | Effort | Input | Output | Reasoning tokens (included in output) | Total | Duration ms |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| 1 | PRE | gpt-5.6-sol | low | 377 | 232 | 0 | 609 | 4708.94 |
+| 2 | Web answer | gpt-5.6-sol | low | 47 | 186 | 23 | 233 | 4150.50 |
+| 3 | POST | gpt-5.6-sol | low | 1242 | 1045 | 39 | 2287 | 8432.80 |
+
+Total: 3 OpenAI calls, 1,666 input + 1,463 output = 3,129 tokens, 62 reasoning tokens included in output, 17,292.24 ms. Zero Gemini generations. Raw responses, snapshot, call ledger and pass are under ignored work/final-validation-2026-10-23. No secrets are included in this report.
+
+Remaining authorization: up to 3 OpenAI calls and 1 Gemini generation for extension PRE + extraction/POST. No repair or automatic retries. devtools.final_validation:app runs on loopback:8000 against the same persistent six-call ledger. The validation pass is capped at six total operations as an extra authorization safeguard; normal operator defaults remain 30 operations/72 hours, six per minute and 200 global calls.
+
+Global cumulative token limit added: PICKYLENS_GLOBAL_TOKEN_BUDGET defaults to 2,000,000. Atomic admission requires both call capacity AND a 300,000-token reservation. Actual reported usage settles the reservation; unknown usage retains it. Serialized provider input/schema and output are bounded. Restart/concurrency/unknown-usage tests pass. 92 Python tests and worker protocol checks pass; whitespace checks pass.
+
+Browser acceptance is waiting for manual extension installation: current Gemini page still displays the old feasibility probe. No production extension review or Gemini generation was attempted. Disable old probe, load extensions/browser, enter the private local validation pass in extension options, and refresh Gemini. No further live authorization is required within the remaining allowance.
+
+VESTA deployment, public checks, deployed extension ZIP and 6-ship remain pending until browser acceptance passes.

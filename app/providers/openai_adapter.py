@@ -24,6 +24,11 @@ class OpenAIProvider:
 
     async def request(self, messages, purpose, schema=None):
         args = dict(model=self.settings.model, reasoning={"effort": self.settings.reasoning_effort}, input=messages, store=False, max_output_tokens=6000)
+        # UTF-8 byte length is a conservative text-token bound. Leave ample headroom
+        # for schema serialization and protocol overhead inside the 300k reservation.
+        envelope = json.dumps({'messages': messages, 'schema': schema.model_json_schema() if schema else None})
+        if len(envelope.encode('utf-8')) > 260000:
+            raise ValueError("Request exceeds the bounded evaluation size.")
         record = self.recorder.begin(purpose, args) if self.recorder else None
         entry = ModelCall(provider="openai", model=self.settings.model, purpose=purpose)
         bucket = calls.get()

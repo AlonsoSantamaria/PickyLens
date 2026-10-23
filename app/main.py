@@ -35,7 +35,8 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
     if access is None and not injected_provider and not internal_tools:
         access = JudgeAccess(os.environ.get("PICKYLENS_ACCESS_DB", "data/judge-access.sqlite3"),
             int(os.environ.get("PICKYLENS_GLOBAL_OPERATIONS", "200")),
-            int(os.environ.get("PICKYLENS_OPERATIONS_PER_MINUTE", "6")))
+            int(os.environ.get("PICKYLENS_OPERATIONS_PER_MINUTE", "6")),
+            int(os.environ.get("PICKYLENS_GLOBAL_TOKEN_BUDGET", "2000000")))
     unconfigured = isinstance(provider, UnconfiguredProvider)
     if access:
         provider = BoundedProvider(provider, access)
