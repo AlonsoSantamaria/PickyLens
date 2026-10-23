@@ -57,7 +57,7 @@ Tests use temporary SQLite databases and the injected deterministic provider. Cr
 
 Development loads only the project-root `.env`, with normal process environment variables taking precedence. Secrets are masked in configuration representations and never included in browser responses. `.env.example` contains names and safe defaults only. No implicit search in parent directories is performed.
 
-For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. Protect the deployed single-user instance with HTTP Basic Authentication or equivalent access control at the VESTA reverse proxy; keep application authentication out of the MVP. This is deployment documentation only; no server changes have been made.
+For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. The original reverse-proxy-only access plan is superseded by the authorized Judge Pass finalization below. Keep the backend behind the trusted HTTPS proxy; Judge Pass protects Web and extension evaluation. This is deployment documentation only; no server changes have been made.
 
 The bounded Slice 2 verification harness is `python -m devtools.live_verify`; it records attempts and usage under ignored `work/live-verification/`, disables SDK retries, and refuses automatic reruns of an existing capture. Never run it without an authorized live-call budget.
 
@@ -109,3 +109,21 @@ Read an existing interaction without model calls:
 ## Gemini CLI extension v0.1 — deterministic checkpoint
 
 The separately approved Gemini milestone now has a thin local adapter with BeforeAgent request review, AfterAgent answer review, a technical manual fallback and separate experimental storage. See [extension setup and boundaries](extensions/pickylens/README.md) and [the deterministic checkpoint](devpost/gemini-extension-checkpoint.md). Earlier statements that Gemini had not started describe the completed 5-build milestone. Live Gemini/OpenAI validation is still pending separate approval; 6-ship has not started.
+
+## Judge Pass access (finalization candidate)
+
+The normal runtime now requires a Judge Pass. An operator creates a bounded code with `.\.venv\Scripts\python.exe -m devtools.issue_judge_pass --operations 30 --hours 72` and shares it privately. This command prints a bearer credential: never put its output in Git, screenshots, logs, or public documents. Judges enter it at `/access`, then use the live Web application. This controlled single-user demo has shared History; use sample work only.
+
+Defaults: 30 provider operations per issued pass, 72-hour expiration, 6 provider calls per rolling minute per pass, and a persistent global lifetime ceiling of 200 calls. Failed attempts consume a reservation. Each call has a 60,000-character serialized-context ceiling and a 6,000-output-token cap. These are bounded-call/token controls, not exact dollar accounting. Browser POST currently costs two calls (request extraction then evaluation); PRE and repair each cost one. Exhaustion blocks provider execution and never falls back to Replay. Protect the access database and do not delete it to reset spending inadvertently.
+
+Operator environment variables: `PICKYLENS_ACCESS_DB`, `PICKYLENS_GLOBAL_OPERATIONS`, `PICKYLENS_OPERATIONS_PER_MINUTE`. Supply these as process environment variables, including through VESTA systemd's protected `/etc/neovantia/secrets/pickylens/runtime.env`. Keep `OPENAI_API_KEY` there as well; deployed repositories do not need `.env`. Use HTTPS, preserve forwarded scheme/host only from the trusted reverse proxy, and keep the database outside the public web root. Local development continues to load model configuration from ignored `.env` with OS precedence.
+
+## Optional Gemini browser extension
+
+See `extensions/browser/README.md`. The new candidate uses composer PRE and an explicit Check this answer action; it does not infer automatic POST completion. The old browser spike and CLI adapters remain evidence/optional integrations.
+
+The operator packages one exact deployed HTTPS backend origin using `python -m devtools.package_browser https://YOUR-DEPLOYED-HOST work/pickylens-browser.zip`. Replace the example with the actual verified deployment. The ZIP has no secrets and requests only that backend plus Gemini access. Judges install the ZIP unpacked and enter a Judge Pass; they do not run this packaging command or install developer tools.
+
+Privacy: Web interactions and evidence are saved in server SQLite for shared controlled-demo History. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
+
+Final browser acceptance, minimal live validation, HTTPS deployment and 6-ship remain pending; this section does not claim they have passed.

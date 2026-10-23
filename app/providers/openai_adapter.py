@@ -23,7 +23,7 @@ class OpenAIProvider:
         self.recorder = recorder
 
     async def request(self, messages, purpose, schema=None):
-        args = dict(model=self.settings.model, reasoning={"effort": self.settings.reasoning_effort}, input=messages, store=False)
+        args = dict(model=self.settings.model, reasoning={"effort": self.settings.reasoning_effort}, input=messages, store=False, max_output_tokens=6000)
         record = self.recorder.begin(purpose, args) if self.recorder else None
         entry = ModelCall(provider="openai", model=self.settings.model, purpose=purpose)
         bucket = calls.get()

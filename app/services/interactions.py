@@ -1,3 +1,4 @@
+from app.services.judge_access import AccessDenied
 import hashlib
 import json
 import sqlite3
@@ -254,7 +255,7 @@ class Interactions:
             status_code = 504 if isinstance(exc, TimeoutError) else 502
             s = before
             label = {"answer":"AI response", "followup":"Follow-up request", "resolve":"Uncertainty review"}.get(name, name.upper())
-            s.failure = f"{label} could not be completed. Completed work is saved."
+            s.failure = str(exc) if isinstance(exc, AccessDenied) else f"{label} could not be completed. Completed work is saved."
             s.failed_action = name
             s.lifecycle_status = "Failed at " + name.upper()
             self.attach_calls(s, records, a.operation_id)

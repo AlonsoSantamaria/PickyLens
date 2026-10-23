@@ -1,0 +1,3 @@
+chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
+document.getElementById('save').onclick=async()=>{const value=document.getElementById('pass').value.trim();if(value.length<30){document.getElementById('status').textContent='Enter a valid Judge Pass.';return;}await chrome.storage.local.set({judgePass:value});document.getElementById('pass').value='';document.getElementById('status').textContent='Pass saved. Return to Gemini.';};
+document.getElementById('clear').onclick=async()=>{await chrome.storage.local.remove('judgePass');document.getElementById('status').textContent='Pass removed.';};
