@@ -57,7 +57,7 @@ VESTA deployment, public checks, deployed extension ZIP and 6-ship remain pendin
 
 Production candidate loaded in the user Chrome profile after the requested visual refinements. Composer PRE returned Ready. Send original anyway delivered the exact unchanged request. One normal Gemini generation completed. The user-facing explicit Check answer action triggered extraction and POST; all five requirements were Complete. Expanding the recommendation showed an exact excerpt from the correct Gemini response. No automatic POST, retry, regeneration or repair call was made.
 
-Conversation: https://gemini.google.com/app/c0bf54bc935a7fd6. Matching request/answer container: 83508d27df297f30. Result panel was directly adjacent to that model-response. Google displayed Gemini Automatic; exact underlying model and token usage were not exposed in the UI and are not inferred.
+Conversation and matching request/answer identifiers are retained only in private local validation evidence. Result panel was directly adjacent to that model-response. Google displayed Gemini Automatic; exact underlying model and token usage were not exposed in the UI and are not inferred.
 
 | Call | Purpose | Model | Effort | Input | Output | Reasoning (included) | Total | ms |
 |---|---|---|---|---:|---:|---:|---:|---:|
@@ -72,3 +72,14 @@ Live backend denial checks: invalid bearer returned 401; exhausted valid pass re
 Options are now exposed both as a normal toolbar popup and an options_ui page; no manual DevTools/storage configuration. Small controls share CSS glasses, subtle hover, visible focus and 5px icon/text spacing. Visual identity rule recorded separately.
 
 Final outstanding acceptance item: user must disable the extension and refresh Gemini so clean host restoration can be inspected. Chrome extension management cannot be automated through the available browser surface. Until this check completes, deployment and 6-ship remain pending. Core Gemini interaction passed; final readiness is conditional on cleanup.
+
+
+## Acceptance closed and deployment — 2026-10-23
+
+The learner confirmed disabling removes the PickyLens control and reenabling restores it. Gemini browser v0.1 acceptance is complete. Earlier pending statements above describe historical checkpoints.
+
+VESTA now serves https://pickylens.neovantia.live with the existing wildcard certificate, Apache proxy and a dedicated systemd service. Application release: df01953. Protected external runtime configuration and persistent SQLite state are outside the release directory. See deployment/README.md.
+
+External HTTPS checks passed: access/workspace/History 200, invalid pass 401, exhausted pass 429, Secure HttpOnly cookie, no public Replay/test labels. Provider reservations did not increase. No deployed inference was attempted: the authorized six OpenAI calls and one Gemini generation remain the entire final live budget.
+
+The production extension package is work/pickylens-browser-v0.1.zip, pinned to the canonical HTTPS backend. Source extension retains localhost for development. Public shipping is in progress; no video, public repository or Devpost submission has yet been confirmed. Approved planning statuses, completed 5-build and the honest Replay fixture remain unchanged.

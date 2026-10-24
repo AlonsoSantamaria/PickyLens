@@ -57,7 +57,7 @@ Tests use temporary SQLite databases and the injected deterministic provider. Cr
 
 Development loads only the project-root `.env`, with normal process environment variables taking precedence. Secrets are masked in configuration representations and never included in browser responses. `.env.example` contains names and safe defaults only. No implicit search in parent directories is performed.
 
-For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. The original reverse-proxy-only access plan is superseded by the authorized Judge Pass finalization below. Keep the backend behind the trusted HTTPS proxy; Judge Pass protects Web and extension evaluation. This is deployment documentation only; no server changes have been made.
+For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. The original reverse-proxy-only access plan is superseded by the authorized Judge Pass finalization below. Keep the backend behind the trusted HTTPS proxy; Judge Pass protects Web and extension evaluation. Deployment is now active; see deployment/README.md for the installed service and verification.
 
 The bounded Slice 2 verification harness is `python -m devtools.live_verify`; it records attempts and usage under ignored `work/live-verification/`, disables SDK retries, and refuses automatic reruns of an existing capture. Never run it without an authorized live-call budget.
 
@@ -81,7 +81,7 @@ The learner approved the final hands-on review on 2026-10-12. Run one server at 
 
 Expand the first-use guide, complete the flow, inspect requirement evidence, and visit Interactions. Check pause/reload/resume before completion, then confirm completed records have no Resume action. Review at a narrow browser width as well as desktop size.
 
-Known limits: one shared History, no accounts; conservative Replay compatibility; model judgments can vary despite schema/evidence validation; no live repair/VERIFY validation has been performed in the final polish pass. The genuine response and the prior live POST result are documented in `devpost/live-verification.md`. Deterministic tests establish orchestration and boundaries, not general semantic accuracy. Gemini integration and deployment/submission work remain unstarted.
+Known limits: one shared History, no accounts; conservative Replay compatibility; model judgments can vary despite schema/evidence validation; no live repair/VERIFY validation has been performed in the final polish pass. The genuine response and the prior live POST result are documented in `devpost/live-verification.md`. Deterministic tests establish orchestration and boundaries, not general semantic accuracy. Gemini browser acceptance and deployment are complete; submission remains pending.
 
 
 ### Revised workbench hands-on path
@@ -90,7 +90,7 @@ The desktop view uses equal request/answer columns. Start with Review my request
 
 ## Build completion and reference map
 
-All four build slices, final hands-on review, and the Skill Pack learning wrap-up are complete. Open [the standalone app map](devpost/app-map.html) locally for the finished code route and reusable verification practice. Planning documents remain approved; completion and test evidence are recorded in [the build checklist](devpost/checklist.md). Gemini and 6-ship require separate approval and have not started.
+All four build slices, final hands-on review, and the Skill Pack learning wrap-up are complete. Open [the standalone app map](devpost/app-map.html) locally for the finished code route and reusable verification practice. Planning documents remain approved; completion and test evidence are recorded in [the build checklist](devpost/checklist.md). Subsequent authorized milestones are recorded in devpost/finalization.md.
 
 ## Post-build live refinement and observability
 
@@ -126,11 +126,11 @@ The operator packages one exact deployed HTTPS backend origin using `python -m d
 
 Privacy: Web interactions and evidence are saved in server SQLite for shared controlled-demo History. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
 
-Final browser acceptance, minimal live validation, HTTPS deployment and 6-ship remain pending; this section does not claim they have passed.
+Browser live acceptance and HTTPS deployment passed on 2026-10-23. 6-ship is in progress; video, public repository and learner-written submission remain pending.
 
 
 ### Global token circuit breaker
 
 `PICKYLENS_GLOBAL_TOKEN_BUDGET=2000000` adds a cumulative input-plus-output token ceiling alongside the call ceiling. Each call atomically reserves 300,000 tokens; known usage settles to the reported total. Unknown usage (including interrupted calls) retains its reservation. Concurrent pending calls therefore consume capacity before invoking OpenAI. The provider bounds serialized input/schema size and output tokens; admission may stop conservatively with unused budget below a full reservation. Persist the ledger across restarts. Set the global token budget to zero for an immediate fail-closed stop. Reservations preserve model, purpose, latency and usage metadata; model reasoning configuration remains in protected runtime configuration and validation evidence.
 
-Canonical deployment target: https://pickylens.neovantia.live, with API paths on the same origin. This is the intended hostname, not a deployment-success claim.
+Canonical deployment target: https://pickylens.neovantia.live, with API paths on the same origin. HTTPS access and fail-closed Judge Pass behavior have been verified without additional inference.

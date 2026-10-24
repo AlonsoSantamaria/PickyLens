@@ -1,6 +1,6 @@
-# PickyLens for Gemini Chat — v0.1 candidate
+# PickyLens for Gemini Chat â€” v0.1 candidate
 
-This is the new extension, not devtools/browser_spike. Disable the old feasibility probe before loading it. Browser/live acceptance is still pending.
+This is the new extension, not devtools/browser_spike. Disable the old feasibility probe before loading it. Local live browser acceptance passed on 2026-10-23. The release ZIP targets https://pickylens.neovantia.live; deployed inference has not been repeated.
 
 ## Judge installation (operator-supplied HTTPS package)
 1. Extract the supplied PickyLens ZIP into a permanent folder.
