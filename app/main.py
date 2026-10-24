@@ -1,4 +1,5 @@
 import os
+import hashlib
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -36,7 +37,11 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
         access = JudgeAccess(os.environ.get("PICKYLENS_ACCESS_DB", "data/judge-access.sqlite3"),
             int(os.environ.get("PICKYLENS_GLOBAL_OPERATIONS", "200")),
             int(os.environ.get("PICKYLENS_OPERATIONS_PER_MINUTE", "6")),
-            int(os.environ.get("PICKYLENS_GLOBAL_TOKEN_BUDGET", "2000000")))
+            int(os.environ.get("PICKYLENS_GLOBAL_TOKEN_BUDGET", "2000000")),
+            anonymous_operations=int(os.environ.get("PICKYLENS_ANONYMOUS_OPERATIONS", "12")),
+            anonymous_hours=int(os.environ.get("PICKYLENS_ANONYMOUS_HOURS", "24")),
+            anonymous_per_minute=int(os.environ.get("PICKYLENS_ANONYMOUS_PER_MINUTE", "6")),
+            anonymous_ip_operations=int(os.environ.get("PICKYLENS_ANONYMOUS_IP_OPERATIONS", "30")))
     unconfigured = isinstance(provider, UnconfiguredProvider)
     if access:
         provider = BoundedProvider(provider, access)
@@ -54,42 +59,35 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
     async def judge_gate(request, call_next):
         if not access or request.url.path.startswith('/static/') or request.url.path == '/access':
             return await call_next(request)
-        bearer = request.headers.get('authorization', '')
-        token = bearer[7:] if bearer.startswith('Bearer ') else request.cookies.get('pickylens_pass','')
-        try:
-            identity = access.validate(token)
-        except AccessDenied as exc:
-            if request.url.path.startswith('/api/'):
-                return JSONResponse({'detail':str(exc)}, status_code=401)
-            return RedirectResponse('/access', status_code=303)
-        if request.method not in {'GET','HEAD'} and not bearer.startswith('Bearer '):
-            origin = request.headers.get('origin')
-            if origin != str(request.base_url).rstrip('/'):
-                return JSONResponse({'detail':'Request origin not permitted.'}, status_code=403)
+        browser_api = request.url.path.startswith('/api/browser/')
+        new_cookie = None
+        if browser_api:
+            bearer = request.headers.get('authorization', '')
+            try:
+                identity = access.validate(bearer[7:] if bearer.startswith('Bearer ') else '')
+            except AccessDenied as exc:
+                return JSONResponse({'detail': str(exc)}, status_code=401)
+        else:
+            if request.method not in {'GET','HEAD'}:
+                if request.headers.get('origin') != str(request.base_url).rstrip('/'):
+                    return JSONResponse({'detail':'Request origin not permitted.'}, status_code=403)
+            # Uvicorn accepts forwarded client addresses only from the loopback proxy.
+            identity, new_cookie = access.anonymous(request.cookies.get('pickylens_demo',''), request.client.host if request.client else 'unknown')
         ctx = principal.set(identity)
         try:
-            return await call_next(request)
+            response = await call_next(request)
+            if new_cookie:
+                response.set_cookie('pickylens_demo', new_cookie, httponly=True, samesite='strict',
+                                    secure=request.url.scheme=='https', max_age=access.anonymous_hours*3600, path='/')
+            response.headers['Cache-Control'] = 'no-store'
+            return response
         finally:
             principal.reset(ctx)
 
-    @app.get('/access', response_class=HTMLResponse)
+    @app.get('/access')
     async def access_page():
-        return (BASE / 'templates' / 'access.html').read_text(encoding='utf-8')
+        return RedirectResponse('/', status_code=303)
 
-    @app.post('/access')
-    async def enter(request: Request):
-        if not access:
-            return JSONResponse({'detail':'Judge access is not enabled.'},status_code=400)
-        body = await request.json()
-        try:
-            code = body.get('code','')
-            access.validate(code)
-        except (AccessDenied, AttributeError, TypeError):
-            return JSONResponse({'detail':'Your Judge Pass is invalid or expired.'},status_code=401)
-        response = JSONResponse({'ok':True})
-        response.set_cookie('pickylens_pass',code,httponly=True,samesite='strict',
-                            secure=request.url.scheme=='https',max_age=86400,path='/')
-        return response
     app.state.repository, app.state.provider = repository, provider
     templates = Jinja2Templates(directory=str(BASE / "templates"))
     app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
@@ -118,6 +116,11 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
         return JSONResponse({"detail": str(exc)}, status_code=422)
 
     def visible(snapshot):
+        if access:
+            with repository.connect() as db:
+                row = db.execute('SELECT operation_id FROM interaction_events WHERE interaction_id=? AND sequence_number=1', (snapshot.interaction_id,)).fetchone()
+            if not row or not row[0] or not row[0].startswith((principal.get() or 'unowned') + ':'):
+                return False
         return internal_tools or (snapshot.mode == "live" and not snapshot.test_stub)
 
     def public_record(id):
@@ -152,18 +155,23 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
     async def read(id: str):
         return public_record(id)
 
+    def scoped_action(action):
+        if access:
+            return action.model_copy(update={'operation_id': principal.get() + ':' + hashlib.sha256(action.operation_id.encode()).hexdigest()})
+        return action
+
     @app.post("/api/interactions/pre")
     async def start(action: Action):
         live_action(action)
         if unconfigured:
             return JSONResponse({"detail": "Live AI is not configured. Ask the operator to configure the AI service, then try again."}, status_code=503)
-        return await service.start(action)
+        return await service.start(scoped_action(action))
 
     @app.post("/api/interactions/{id}/{name}")
     async def act(id: str, name: str, action: Action):
         public_record(id)
         live_action(action, name)
-        return await service.act(id, name, action)
+        return await service.act(id, name, scoped_action(action))
 
     return app
 

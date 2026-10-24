@@ -362,3 +362,14 @@ Live application: https://pickylens.neovantia.live/ (bounded Judge Pass required
 Browser package: https://github.com/AlonsoSantamaria/PickyLens/releases/latest.
 Demo video: pending learner recording and upload.
 This sharing metadata does not change the approved technical specification.
+
+
+## Authorized access correction — 2026-10-23
+
+Public Web now provides automatic anonymous access without a Judge Pass, login or account. Extension APIs alone retain Bearer Judge Pass validation. Anonymous defaults: 12 provider operations per 24-hour session; 6/minute per session and IP; 30/IP/rolling 24 hours. All paths share the persistent 200-call and 2,000,000-token global breakers. Unknown token usage remains reserved. Cookie replacement cannot reset the IP allowance. IP identities are keyed hashes; the proxy trust boundary was verified against spoofed forwarded headers.
+
+Web History is restricted to the current anonymous session; expired/cleared sessions lose access to old records. Prior records and the event trace remain preserved but unowned legacy records are hidden. No account system is introduced. The anonymous cookie is HttpOnly, Secure under HTTPS and SameSite Strict; Web mutations require the same origin. Anonymous tokens cannot authenticate extension routes.
+
+Verification: 97 deterministic tests pass; worker protocol, compilation and whitespace checks pass. VESTA was updated preserving databases, passes and secrets. A fresh browser opened the live workspace directly with Review my request available. Clean HTTPS checks returned 200, blank request validation 422, exhausted anonymous session 429 with the product allowance message, invalid extension pass 401, exhausted extension pass 429. Provider reservation count was unchanged. Zero new inference calls; deployed successful PRE was not rerun because deterministic API tests establish the changed access path and the live provider configuration is unchanged.
+
+This supersedes earlier references to a Web pass gate or shared public History. Existing approved planning status is retained; this is the learner-authorized access amendment. Public repository already existed before this correction; publication was paused until verification passed. 6-ship remains pending video, learner-authored submission, exit survey and submission confirmation.

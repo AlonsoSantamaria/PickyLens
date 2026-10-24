@@ -62,16 +62,32 @@ def test_browser_pass_blocks_provider_and_explicit_post(tmp_path):
     assert len(provider.calls)==4
 
 
-def test_web_cookie_origin_and_history_protection(tmp_path):
+def test_web_anonymous_cookie_origin_and_history_isolation(tmp_path):
     access=JudgeAccess(tmp_path/'access.db')
-    client=TestClient(create_app(StubProvider(),tmp_path/'web.db',access=access))
-    assert client.get('/interactions',follow_redirects=False).status_code==303
-    token=access.issue()
-    response=client.post('/access',json={'code':token})
-    assert response.status_code==200 and 'HttpOnly' in response.headers['set-cookie']
+    provider=StubProvider()
+    app=create_app(provider,tmp_path/'web.db',access=access)
+    client=TestClient(app,base_url='https://testserver')
+    other=TestClient(app,base_url='https://testserver')
+    page=client.get('/')
+    assert page.status_code==200 and 'Judge Pass' not in page.text
+    assert 'HttpOnly' in page.headers['set-cookie'] and 'Secure' in page.headers['set-cookie']
     assert client.get('/interactions').status_code==200
-    assert client.post('/api/browser/pre',json={'request':'Task'},headers={'Origin':'https://evil.invalid'}).status_code==403
-    assert client.post('/api/browser/pre',json={'request':'Task'},headers={'Origin':'http://testserver'}).status_code==200
+    payload={'operation_id':'same','request_text':'Task'}
+    assert client.post('/api/interactions/pre',json=payload,headers={'Origin':'https://evil.invalid'}).status_code==403
+    result=client.post('/api/interactions/pre',json=payload,headers={'Origin':'https://testserver'})
+    assert result.status_code==200,result.text
+    id=result.json()['interaction_id']
+    assert client.get('/api/interactions/'+id).status_code==200
+    assert other.get('/api/interactions/'+id).status_code==404
+    assert other.get('/interactions/'+id).status_code==404
+    assert other.get('/?interaction='+id).status_code==404
+    assert id not in other.get('/interactions').text
+    second=other.post('/api/interactions/pre',json=payload,headers={'Origin':'https://testserver'})
+    assert second.status_code==200 and second.json()['interaction_id']!=id
+    # Anonymous cookies and legacy pass cookies cannot authorize the extension API.
+    assert client.post('/api/browser/pre',json={'request':'Task'}).status_code==401
+    assert client.post('/api/browser/pre',json={'request':'Task'},headers={'Authorization':'Bearer '+client.cookies['pickylens_demo']}).status_code==401
+    assert client.get('/access',follow_redirects=False).headers['location']=='/'
 
 
 def test_long_context_and_failures_are_bounded(tmp_path):
@@ -130,3 +146,61 @@ def test_token_ceiling_reservation_and_settlement(tmp_path):
         restarted=JudgeAccess(tmp_path/'tokens.db',global_limit=30,token_limit=300100)
         with pytest.raises(AccessDenied):restarted.reserve()
     finally:principal.reset(ctx)
+
+
+def test_anonymous_limits_survive_cookie_rotation_and_restart(tmp_path):
+    access=JudgeAccess(tmp_path/'access.db',anonymous_operations=1,anonymous_per_minute=10,anonymous_ip_operations=2)
+    identity,cookie=access.anonymous('', '127.0.0.2')
+    assert access.anonymous(cookie,'127.0.0.2')==(identity,None)
+    def reserve(key):
+        token=principal.set(key)
+        try:return access.reserve()
+        finally:principal.reset(token)
+    reserve(identity)
+    with pytest.raises(AccessDenied,match='Public demo allowance'):reserve(identity)
+    other,_=access.anonymous('', '127.0.0.2');reserve(other)
+    fresh,_=access.anonymous('', '127.0.0.2')
+    with pytest.raises(AccessDenied,match='Public demo allowance'):reserve(fresh)
+    access=JudgeAccess(tmp_path/'access.db',anonymous_ip_operations=2)
+    with pytest.raises(AccessDenied,match='Public demo allowance'):reserve(fresh)
+    with access.connect() as db:
+        assert db.execute('SELECT count(*) FROM reservations').fetchone()[0]==2
+        assert db.execute("SELECT count(*) FROM passes WHERE ip_digest='127.0.0.2'").fetchone()[0]==0
+
+
+@pytest.mark.parametrize('limit,tokens',[(1,2000000),(200,300000)])
+def test_global_breakers_shared_between_anonymous_and_extension(tmp_path,limit,tokens):
+    access=JudgeAccess(tmp_path/'access.db',global_limit=limit,token_limit=tokens)
+    judge=access.validate(access.issue(1))
+    anonymous,_=access.anonymous('', '127.0.0.3')
+    ctx=principal.set(anonymous)
+    try:access.reserve()
+    finally:principal.reset(ctx)
+    ctx=principal.set(judge)
+    try:
+        with pytest.raises(AccessDenied):access.reserve()
+    finally:principal.reset(ctx)
+
+
+def test_anonymous_ip_rate_limit_is_atomic(tmp_path):
+    access=JudgeAccess(tmp_path/'access.db',anonymous_per_minute=2)
+    identities=[access.anonymous('', '127.0.0.4')[0] for _ in range(8)]
+    def attempt(key):
+        ctx=principal.set(key)
+        try:access.reserve();return True
+        except AccessDenied:return False
+        finally:principal.reset(ctx)
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        assert sum(pool.map(attempt,identities))==2
+
+
+def test_web_allowance_failure_preserves_work_without_provider_call(tmp_path):
+    access=JudgeAccess(tmp_path/'access.db',anonymous_operations=1)
+    provider=StubProvider();client=TestClient(create_app(provider,tmp_path/'web.db',access=access))
+    headers={'Origin':'http://testserver'}
+    first=client.post('/api/interactions/pre',json={'operation_id':'one','request_text':'Task'},headers=headers)
+    assert first.status_code==200
+    failed=client.post('/api/interactions/pre',json={'operation_id':'two','request_text':'Task'},headers=headers)
+    assert failed.status_code==429 and 'Public demo allowance reached' in failed.text
+    assert len(provider.calls)==1
+    assert client.get('/api/interactions/'+first.json()['interaction_id']).status_code==200

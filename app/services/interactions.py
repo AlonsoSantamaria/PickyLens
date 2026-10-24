@@ -252,7 +252,7 @@ class Interactions:
             if not s.terminal:
                 s.lifecycle_status = "Recovered after retry" if s.recovered else "In progress"
         except Exception as exc:
-            status_code = 504 if isinstance(exc, TimeoutError) else 502
+            status_code = 429 if isinstance(exc, AccessDenied) else (504 if isinstance(exc, TimeoutError) else 502)
             s = before
             label = {"answer":"AI response", "followup":"Follow-up request", "resolve":"Uncertainty review"}.get(name, name.upper())
             s.failure = str(exc) if isinstance(exc, AccessDenied) else f"{label} could not be completed. Completed work is saved."

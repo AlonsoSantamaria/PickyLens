@@ -1,27 +1,18 @@
 """Deployment HTTP checks only. Test passes cannot reach a model call."""
 import json
-import os
-from pathlib import Path
 import httpx2 as httpx
 from app.services.judge_access import JudgeAccess
 access=JudgeAccess('/var/lib/neovantia/pickylens/judge-access.sqlite3')
-secret=Path('/etc/neovantia/secrets/pickylens/judge-pass.txt')
-if secret.exists():
-    token=secret.read_text().strip()
-else:
-    token=access.issue(30,72)
-    fd=os.open(secret,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
-    with os.fdopen(fd,'w') as f:f.write(token)
 exhausted=access.issue(1,1)
 with access.connect() as db:
     db.execute('UPDATE passes SET used=maximum WHERE digest=?',(access.digest(exhausted),))
     before=db.execute('SELECT count(*) FROM reservations').fetchone()[0]
 with httpx.Client(base_url='https://pickylens.neovantia.live',timeout=20) as client:
-    assert client.get('/access').status_code==200
+    assert client.get('/access').status_code==303
     invalid=client.post('/api/browser/pre',headers={'Authorization':'Bearer invalid'},json={'request':'denial check'})
     denied=client.post('/api/browser/pre',headers={'Authorization':'Bearer '+exhausted},json={'request':'denial check'})
     assert invalid.status_code==401 and denied.status_code==429
-    login=client.post('/access',json={'code':token})
+    login=client.get('/')
     assert login.status_code==200
     assert 'Secure' in login.headers['set-cookie'] and 'HttpOnly' in login.headers['set-cookie']
     page=client.get('/')

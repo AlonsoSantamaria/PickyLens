@@ -2,7 +2,7 @@
 
 Quality-check the whole AI interaction.
 
-Live demo: https://pickylens.neovantia.live/ (a privately supplied, bounded Judge Pass is required).
+Live demo: https://pickylens.neovantia.live/ (no account, login or code required).
 
 Source: https://github.com/AlonsoSantamaria/PickyLens · MIT License.
 
@@ -122,7 +122,7 @@ The separately approved Gemini milestone now has a thin local adapter with Befor
 
 ## Judge Pass access (finalization candidate)
 
-The normal runtime now requires a Judge Pass. An operator creates a bounded code with `.\.venv\Scripts\python.exe -m devtools.issue_judge_pass --operations 30 --hours 72` and shares it privately. This command prints a bearer credential: never put its output in Git, screenshots, logs, or public documents. Judges enter it at `/access`, then use the live Web application. This controlled single-user demo has shared History; use sample work only.
+The Gemini extension requires a Judge Pass; the normal Web demo automatically receives a bounded anonymous session. An operator creates a bounded code with `.\.venv\Scripts\python.exe -m devtools.issue_judge_pass --operations 30 --hours 72` and shares it privately. This command prints a bearer credential: never put its output in Git, screenshots, logs, or public documents. Extension users enter it in the extension toolbar popup. Web visitors land directly in the live workspace. Anonymous History is scoped to the current browser session; expired or cleared sessions cannot reopen prior records. Use sample work only.
 
 Defaults: 30 provider operations per issued pass, 72-hour expiration, 6 provider calls per rolling minute per pass, and a persistent global lifetime ceiling of 200 calls. Failed attempts consume a reservation. Each call has a 60,000-character serialized-context ceiling and a 6,000-output-token cap. These are bounded-call/token controls, not exact dollar accounting. Browser POST currently costs two calls (request extraction then evaluation); PRE and repair each cost one. Exhaustion blocks provider execution and never falls back to Replay. Protect the access database and do not delete it to reset spending inadvertently.
 
@@ -134,7 +134,7 @@ See `extensions/browser/README.md`. The new candidate uses composer PRE and an e
 
 The operator packages one exact deployed HTTPS backend origin using `python -m devtools.package_browser https://YOUR-DEPLOYED-HOST work/pickylens-browser.zip`. Replace the example with the actual verified deployment. The ZIP has no secrets and requests only that backend plus Gemini access. Judges install the ZIP unpacked and enter a Judge Pass; they do not run this packaging command or install developer tools.
 
-Privacy: Web interactions and evidence are saved in server SQLite for shared controlled-demo History. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
+Privacy: Web interactions and evidence are saved in server SQLite and visible only to their anonymous browser session. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
 
 Browser live acceptance and HTTPS deployment passed on 2026-10-23. 6-ship is in progress; video, public repository and learner-written submission remain pending.
 
@@ -144,3 +144,10 @@ Browser live acceptance and HTTPS deployment passed on 2026-10-23. 6-ship is in 
 `PICKYLENS_GLOBAL_TOKEN_BUDGET=2000000` adds a cumulative input-plus-output token ceiling alongside the call ceiling. Each call atomically reserves 300,000 tokens; known usage settles to the reported total. Unknown usage (including interrupted calls) retains its reservation. Concurrent pending calls therefore consume capacity before invoking OpenAI. The provider bounds serialized input/schema size and output tokens; admission may stop conservatively with unused budget below a full reservation. Persist the ledger across restarts. Set the global token budget to zero for an immediate fail-closed stop. Reservations preserve model, purpose, latency and usage metadata; model reasoning configuration remains in protected runtime configuration and validation evidence.
 
 Canonical deployment target: https://pickylens.neovantia.live, with API paths on the same origin. HTTPS access and fail-closed Judge Pass behavior have been verified without additional inference.
+
+
+## Anonymous public Web access
+
+The public Web workspace requires no credential. A random HttpOnly SameSite=Strict cookie is issued automatically (Secure over HTTPS). Defaults: 12 provider operations per session / 24 hours, 6 operations per minute per session and IP, 30 per IP per rolling 24 hours. IPs are stored as keyed hashes; clearing cookies does not reset the IP allowance. Limits are configured through PICKYLENS_ANONYMOUS_OPERATIONS, PICKYLENS_ANONYMOUS_HOURS, PICKYLENS_ANONYMOUS_PER_MINUTE and PICKYLENS_ANONYMOUS_IP_OPERATIONS.
+
+Web and extension reservations share the same persistent 200-call and 2,000,000-token global breakers. Exhaustion returns “Public demo allowance reached. Please try again later.” No Replay/stub fallback exists. Requests from other origins are rejected. Only the trusted loopback proxy may supply forwarded client addresses. Anonymous cookies never authorize extension endpoints, which require Bearer Judge Pass authentication. Earlier shared-History descriptions refer to the prior controlled-demo deployment; existing records are preserved but are not exposed to anonymous visitors.

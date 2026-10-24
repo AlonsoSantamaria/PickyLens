@@ -23,3 +23,8 @@ The operator pass is protected at /etc/neovantia/secrets/pickylens/judge-pass.tx
 The release package work/pickylens-browser-v0.1.zip targets this HTTPS origin. Extract and load unpacked, then use the normal toolbar popup to configure the bounded pass. The source extension remains localhost-only for development.
 
 verify_deployed.py under devtools performs external non-inference access checks with operator SSH access; it creates an exhausted test pass and keeps credentials in memory. verify_http.py is an on-server alternative requiring working server DNS. Neither is a model validation script.
+
+
+## Anonymous Web correction
+
+Public Web access now opens directly without a pass. Extension APIs alone require Judge Pass. Anonymous defaults are 12 operations/24-hour session, 6/minute per session and IP, and 30/IP/rolling day; the existing global call/token ledger is shared and preserved. The service auto-migrates the access schema, retaining existing passes and reservations. Session History is isolated; prior unowned records remain stored and hidden. Apache supplies client addresses to the loopback-only trusted Uvicorn proxy. Do not expose port 8062 publicly or trust arbitrary forwarded headers.
