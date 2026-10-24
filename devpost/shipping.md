@@ -19,3 +19,12 @@ Status: in progress. 5-build remains complete; approved planning statuses are un
 Official rules https://learn-ai-basics.devpost.com/rules recommend a video under three minutes, publicly visible on YouTube or Vimeo. Deadline is October 26, 2026 at 5 PM EDT. Exact authenticated form has not yet been inspected. Official update https://learn-ai-basics.devpost.com/updates/46821-two-new-questions-on-the-submission-form confirms the additional required questions and public repository in Try it out.
 
 No submission copy has been authored by the agent. 6-ship is not complete until required links, learner answers, survey and actual submission are confirmed.
+
+
+## Authorized public publication — 2026-10-23
+
+The learner explicitly authorized public AlonsoSantamaria/PickyLens with the MIT License. Final audit scanned 20 existing commits / 199 unique blobs, current files and the production ZIP. No known provider key or local/deployed pass values matched; common credential signatures also returned zero matches. No learner profile, secret dotenv, runtime databases, private work artifacts or authentication files occurred in published history. .env.example is intentionally retained with a blank key and safe defaults. Paths and environment variable names in operator documentation are not credentials.
+
+MIT LICENSE and visitor-oriented setup/download links are added. Approved process artifacts and original Replay provenance are preserved. Release ZIP SHA-256: b8064c36380968d315b27e28e0b1f961acf7739fbf3ee4f7b12f0a5f8ab69192. The ZIP requests storage, Gemini content-script access and only the canonical backend host permission; it contains no configured pass or provider credential. Work evidence remains ignored. Auditing is evidence-based, not a mathematical guarantee against every possible secret format.
+
+Publication target: https://github.com/AlonsoSantamaria/PickyLens, branch main. Video, learner-written form answers, exit survey and final Devpost submission remain pending. No new model calls were made.

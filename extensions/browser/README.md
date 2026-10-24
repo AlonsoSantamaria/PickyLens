@@ -3,6 +3,8 @@
 This is the new extension, not devtools/browser_spike. Disable the old feasibility probe before loading it. Local live browser acceptance passed on 2026-10-23. The release ZIP targets https://pickylens.neovantia.live; deployed inference has not been repeated.
 
 ## Judge installation (operator-supplied HTTPS package)
+
+Download the ZIP from https://github.com/AlonsoSantamaria/PickyLens/releases/latest. It targets https://pickylens.neovantia.live/. A Judge Pass is supplied privately and is not included in the ZIP.
 1. Extract the supplied PickyLens ZIP into a permanent folder.
 2. Open chrome://extensions (or edge://extensions), enable Developer mode, select Load unpacked, and select that folder.
 3. Click the Chrome Extensions puzzle-piece menu, then PickyLens, to open its Judge Pass popup. Enter the bounded Judge Pass supplied by the operator. Never enter an OpenAI key.

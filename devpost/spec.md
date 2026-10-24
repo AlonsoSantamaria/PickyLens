@@ -353,3 +353,12 @@ Final-review presentation refinement: an approximately equal-width request/answe
 ## Authorized New-Case and Active-Case Orientation
 
 New cases retain the full introduction, first-use guide, human-language process, and two-sided workbench headings until Review my request begins. Active cases collapse introductory decoration and retain a compact sticky header/navigation/mode control, process progress with current/completed/future states, and request/answer orientation links. Narrow screens use shorter orientation labels and hide secondary methodology abbreviations. Starting a new case automatically restores the full introduction. This is presentation derived from interaction state, with no preference, persistence, provider, or recovery change.
+
+
+### Sharing links — authorized shipping update, 2026-10-23
+
+Public repository: https://github.com/AlonsoSantamaria/PickyLens (MIT, main).
+Live application: https://pickylens.neovantia.live/ (bounded Judge Pass required).
+Browser package: https://github.com/AlonsoSantamaria/PickyLens/releases/latest.
+Demo video: pending learner recording and upload.
+This sharing metadata does not change the approved technical specification.

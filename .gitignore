@@ -10,3 +10,12 @@ data/
 work/
 *.sqlite3
 *.sqlite3-*
+
+# Runtime/authentication files must never be published.
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.pem
+*.key
+credentials.json

@@ -2,6 +2,14 @@
 
 Quality-check the whole AI interaction.
 
+Live demo: https://pickylens.neovantia.live/ (a privately supplied, bounded Judge Pass is required).
+
+Source: https://github.com/AlonsoSantamaria/PickyLens · MIT License.
+
+The Web app provides request review, answer checking, targeted follow-up and verification with saved History. The optional Gemini Chat extension provides request review and explicit answer checking alongside normal Gemini conversations. Provider credentials stay on the server.
+
+Download the production extension ZIP from [GitHub Releases](https://github.com/AlonsoSantamaria/PickyLens/releases/latest), then follow [installation instructions](extensions/browser/README.md). Do not load the localhost development source for the public service.
+
 ## Run PickyLens locally
 
 The normal public/judge-facing application uses live AI through the configured OpenAI adapter, with no Replay selector or synthetic fallback. From the project directory, run:
@@ -24,7 +32,7 @@ The fixture is unchanged. It contains conflicting cost statements; no expected a
 
 The separate development runner uses real SQLite persistence and a **clearly labeled deterministic development stub** for all AI behavior. Stub outputs and evaluations are synthetic and scenario-specific, not real model evidence or a captured Replay Demo. No API key is needed and no live calls are made.
 
-From PowerShell in `C:\__Dev\Neovantia\Apps\PickyLens`:
+From PowerShell in the cloned repository:
 
 ```powershell
 .\.venv\Scripts\python.exe -m uvicorn devtools.stub_app:app --host 127.0.0.1 --port 8000
@@ -38,8 +46,10 @@ The real application assembly is `app.main:app`. The development stub is injecte
 
 ## First-time setup (skip when .venv already exists)
 
+Use an existing Python 3.12 or newer installation. Run these commands from your clone; the deployed service uses Python 3.12.
+
 ```powershell
-& 'C:\Program Files\Python314\python.exe' -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
