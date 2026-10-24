@@ -17,9 +17,12 @@ class AccessDenied(ValueError):
     pass
 
 class JudgeAccess:
-    def __init__(self, path, global_limit=200, per_minute=6, token_limit=2000000, *, anonymous_operations=12, anonymous_hours=24, anonymous_per_minute=6, anonymous_ip_operations=30):
+    def __init__(self, path, global_limit=200, per_minute=6, token_limit=2000000, *, anonymous_operations=12, anonymous_hours=24, anonymous_per_minute=6, anonymous_ip_operations=30, anonymous_ip_hours=24, devpost_operations=30, devpost_hours=72, devpost_per_minute=6, devpost_ip_operations=60, devpost_ip_hours=72):
         self.anonymous_operations, self.anonymous_hours = anonymous_operations, anonymous_hours
         self.anonymous_per_minute, self.anonymous_ip_operations = anonymous_per_minute, anonymous_ip_operations
+        self.anonymous_ip_hours = anonymous_ip_hours
+        self.devpost_operations, self.devpost_hours = devpost_operations, devpost_hours
+        self.devpost_per_minute, self.devpost_ip_operations, self.devpost_ip_hours = devpost_per_minute, devpost_ip_operations, devpost_ip_hours
         self.token_limit = token_limit
         self.path, self.global_limit, self.per_minute = str(path), global_limit, per_minute
         Path(path).parent.mkdir(parents=True, exist_ok=True)
@@ -31,6 +34,8 @@ class JudgeAccess:
             if 'kind' not in pass_columns:
                 db.execute("ALTER TABLE passes ADD COLUMN kind TEXT NOT NULL DEFAULT 'judge'")
                 db.execute("ALTER TABLE passes ADD COLUMN ip_digest TEXT")
+            if 'traffic' not in pass_columns:
+                db.execute("ALTER TABLE passes ADD COLUMN traffic TEXT NOT NULL DEFAULT 'normal'")
             db.execute('CREATE TABLE IF NOT EXISTS access_settings (name TEXT PRIMARY KEY, value TEXT NOT NULL)')
             db.execute('INSERT OR IGNORE INTO access_settings VALUES (?,?)', ('ip_salt', secrets.token_hex(32)))
             self.ip_salt = db.execute("SELECT value FROM access_settings WHERE name='ip_salt'").fetchone()[0]
@@ -63,7 +68,7 @@ class JudgeAccess:
             raise AccessDenied('Your Judge Pass is invalid or expired.')
         return digest
 
-    def anonymous(self, token, address):
+    def anonymous(self, token, address, *, devpost=False):
         ip_digest = hmac.new(self.ip_salt.encode(), address.encode(), hashlib.sha256).hexdigest()
         with self.connect() as db:
             row = db.execute("SELECT digest FROM passes WHERE digest=? AND kind='anonymous' AND expires>? AND ip_digest=?", (self.digest(token), time.time(), ip_digest)).fetchone()
@@ -71,22 +76,30 @@ class JudgeAccess:
                 return row[0], None
             token = secrets.token_urlsafe(32)
             digest = self.digest(token)
-            db.execute("INSERT INTO passes(digest,expires,maximum,kind,ip_digest) VALUES (?,?,?,'anonymous',?)", (digest, time.time()+self.anonymous_hours*3600, self.anonymous_operations, ip_digest))
+            hours = self.devpost_hours if devpost else self.anonymous_hours
+            maximum = self.devpost_operations if devpost else self.anonymous_operations
+            db.execute("INSERT INTO passes(digest,expires,maximum,kind,ip_digest,traffic) VALUES (?,?,?,'anonymous',?,?)", (digest, time.time()+hours*3600, maximum, ip_digest, 'devpost' if devpost else 'normal'))
             return digest, token
 
     def reserve(self):
         digest = principal.get()
         with self.connect() as db:
             db.execute('BEGIN IMMEDIATE')
-            row = db.execute('SELECT expires,maximum,used,kind,ip_digest FROM passes WHERE digest=?', (digest,)).fetchone()
+            row = db.execute('SELECT expires,maximum,used,kind,ip_digest,traffic FROM passes WHERE digest=?', (digest,)).fetchone()
             if not row or row[0] <= time.time():
                 raise AccessDenied('Your Judge Pass is invalid or expired.')
             anonymous = row[3] == 'anonymous'
             message = PUBLIC_MESSAGE if anonymous else MESSAGE
+            minute_limit = self.per_minute
             if anonymous:
-                ip_count = db.execute('SELECT count(*) FROM reservations r JOIN passes p ON p.digest=r.digest WHERE p.ip_digest=? AND r.created>?', (row[4],time.time()-86400)).fetchone()[0]
+                devpost = row[5] == 'devpost'
+                minute_limit = self.devpost_per_minute if devpost else self.anonymous_per_minute
+                ip_limit = self.devpost_ip_operations if devpost else self.anonymous_ip_operations
+                ip_hours = self.devpost_ip_hours if devpost else self.anonymous_ip_hours
+                # Count every anonymous class on this IP, not separate ref buckets.
+                ip_count = db.execute('SELECT count(*) FROM reservations r JOIN passes p ON p.digest=r.digest WHERE p.ip_digest=? AND r.created>?', (row[4],time.time()-ip_hours*3600)).fetchone()[0]
                 ip_recent = db.execute('SELECT count(*) FROM reservations r JOIN passes p ON p.digest=r.digest WHERE p.ip_digest=? AND r.created>?', (row[4],time.time()-60)).fetchone()[0]
-                if ip_count >= self.anonymous_ip_operations or ip_recent >= self.anonymous_per_minute:
+                if ip_count >= ip_limit or ip_recent >= minute_limit:
                     raise AccessDenied(PUBLIC_MESSAGE)
             total = db.execute('SELECT count(*) FROM reservations').fetchone()[0]
             if row[2] >= row[1] or total >= self.global_limit:
@@ -95,7 +108,7 @@ class JudgeAccess:
             if charged + 300000 > self.token_limit:
                 raise AccessDenied(message)
             recent = db.execute('SELECT count(*) FROM reservations WHERE digest=? AND created>?', (digest,time.time()-60)).fetchone()[0]
-            if recent >= (self.anonymous_per_minute if anonymous else self.per_minute):
+            if recent >= minute_limit:
                 raise AccessDenied(PUBLIC_MESSAGE if anonymous else 'Please wait a minute before another PickyLens operation.')
             db.execute('UPDATE passes SET used=used+1 WHERE digest=?', (digest,))
             cursor = db.execute('INSERT INTO reservations(digest,created) VALUES(?,?)', (digest,time.time()))

@@ -204,3 +204,73 @@ def test_web_allowance_failure_preserves_work_without_provider_call(tmp_path):
     assert failed.status_code==429 and 'Public demo allowance reached' in failed.text
     assert len(provider.calls)==1
     assert client.get('/api/interactions/'+first.json()['interaction_id']).status_code==200
+
+
+@pytest.mark.parametrize('ref,maximum,hours,traffic',[('',12,24,'normal'),('?ref=devpost',30,72,'devpost'),('?ref=other',12,24,'normal')])
+def test_ref_classification_is_persisted_not_authentication(tmp_path,ref,maximum,hours,traffic):
+    import time
+    access=JudgeAccess(tmp_path/'access.db')
+    client=TestClient(create_app(StubProvider(),tmp_path/'web.db',access=access))
+    page=client.get('/'+ref)
+    assert page.status_code==200 and 'Judge Pass' not in page.text
+    cookie=client.cookies['pickylens_demo'];digest=access.digest(cookie)
+    with access.connect() as db:
+        before=db.execute('SELECT maximum,expires,traffic,used FROM passes WHERE digest=?',(digest,)).fetchone()
+    assert before[0]==maximum and before[2]==traffic and abs(before[1]-time.time()-hours*3600)<5
+    assert f'Max-Age={hours*3600}' in page.headers['set-cookie']
+    client.get('/?ref=devpost');client.get('/')
+    assert client.cookies['pickylens_demo']==cookie
+    with access.connect() as db:
+        assert db.execute('SELECT maximum,expires,traffic,used FROM passes WHERE digest=?',(digest,)).fetchone()==before
+    restarted=JudgeAccess(tmp_path/'access.db')
+    assert restarted.anonymous(cookie,'testclient',devpost=True)==(digest,None)
+    assert client.post('/api/browser/pre?ref=devpost',json={'request':'Task'},headers={'Authorization':'Bearer '+cookie}).status_code==401
+    assert client.post('/api/browser/pre?ref=devpost',json={'request':'Task'}).status_code==401
+
+
+def test_devpost_rolling_ip_window_and_cross_class_accounting(tmp_path):
+    import time
+    access=JudgeAccess(tmp_path/'access.db',devpost_ip_operations=2,devpost_per_minute=10)
+    normal,_=access.anonymous('','same-ip')
+    demo,_=access.anonymous('','same-ip',devpost=True)
+    with access.connect() as db:
+        # Older than the normal window, but still inside the Devpost window.
+        db.execute('INSERT INTO reservations(digest,created,tokens) VALUES (?,?,0)',(normal,time.time()-48*3600))
+    def reserve(key):
+        ctx=principal.set(key)
+        try:return access.reserve()
+        finally:principal.reset(ctx)
+    reserve(demo)
+    fresh,_=access.anonymous('','same-ip',devpost=True)
+    with pytest.raises(AccessDenied,match='Public demo allowance'):reserve(fresh)
+    with access.connect() as db:
+        db.execute('UPDATE reservations SET created=? WHERE digest=?',(time.time()-73*3600,normal))
+    reserve(fresh)
+
+
+@pytest.mark.parametrize('global_limit,token_limit',[(1,2000000),(200,300000)])
+def test_devpost_cannot_bypass_shared_global_breakers(tmp_path,global_limit,token_limit):
+    access=JudgeAccess(tmp_path/'access.db',global_limit=global_limit,token_limit=token_limit)
+    judge=access.validate(access.issue(1));ctx=principal.set(judge)
+    try:access.reserve()
+    finally:principal.reset(ctx)
+    demo,_=access.anonymous('','demo-ip',devpost=True);ctx=principal.set(demo)
+    try:
+        with pytest.raises(AccessDenied,match='Public demo allowance'):access.reserve()
+    finally:principal.reset(ctx)
+
+
+def test_devpost_configured_session_and_rate_limits(tmp_path):
+    access=JudgeAccess(tmp_path/'access.db',devpost_operations=1,devpost_hours=2,devpost_per_minute=1,devpost_ip_operations=3,devpost_ip_hours=4)
+    first,cookie=access.anonymous('','same-ip',devpost=True)
+    def reserve(key):
+        ctx=principal.set(key)
+        try:return access.reserve()
+        finally:principal.reset(ctx)
+    reserve(first)
+    with pytest.raises(AccessDenied):reserve(first)
+    second,_=access.anonymous('','same-ip',devpost=True)
+    with pytest.raises(AccessDenied):reserve(second)
+    with access.connect() as db:
+        assert db.execute('SELECT used,maximum FROM passes WHERE digest=?',(first,)).fetchone()==(1,1)
+        assert db.execute('SELECT count(*) FROM reservations').fetchone()[0]==1

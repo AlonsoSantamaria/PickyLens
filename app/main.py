@@ -41,7 +41,13 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
             anonymous_operations=int(os.environ.get("PICKYLENS_ANONYMOUS_OPERATIONS", "12")),
             anonymous_hours=int(os.environ.get("PICKYLENS_ANONYMOUS_HOURS", "24")),
             anonymous_per_minute=int(os.environ.get("PICKYLENS_ANONYMOUS_PER_MINUTE", "6")),
-            anonymous_ip_operations=int(os.environ.get("PICKYLENS_ANONYMOUS_IP_OPERATIONS", "30")))
+            anonymous_ip_operations=int(os.environ.get("PICKYLENS_ANONYMOUS_IP_OPERATIONS", "30")),
+            anonymous_ip_hours=int(os.environ.get("PICKYLENS_ANONYMOUS_IP_HOURS", "24")),
+            devpost_operations=int(os.environ.get("PICKYLENS_DEVPOST_OPERATIONS", "30")),
+            devpost_hours=int(os.environ.get("PICKYLENS_DEVPOST_HOURS", "72")),
+            devpost_per_minute=int(os.environ.get("PICKYLENS_DEVPOST_PER_MINUTE", "6")),
+            devpost_ip_operations=int(os.environ.get("PICKYLENS_DEVPOST_IP_OPERATIONS", "60")),
+            devpost_ip_hours=int(os.environ.get("PICKYLENS_DEVPOST_IP_HOURS", "72")))
     unconfigured = isinstance(provider, UnconfiguredProvider)
     if access:
         provider = BoundedProvider(provider, access)
@@ -61,6 +67,7 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
             return await call_next(request)
         browser_api = request.url.path.startswith('/api/browser/')
         new_cookie = None
+        devpost_arrival = request.method == 'GET' and request.url.path == '/' and request.query_params.get('ref') == 'devpost'
         if browser_api:
             bearer = request.headers.get('authorization', '')
             try:
@@ -72,13 +79,13 @@ def create_app(provider=None, db_path=None, *, internal_tools=None, access=None)
                 if request.headers.get('origin') != str(request.base_url).rstrip('/'):
                     return JSONResponse({'detail':'Request origin not permitted.'}, status_code=403)
             # Uvicorn accepts forwarded client addresses only from the loopback proxy.
-            identity, new_cookie = access.anonymous(request.cookies.get('pickylens_demo',''), request.client.host if request.client else 'unknown')
+            identity, new_cookie = access.anonymous(request.cookies.get('pickylens_demo',''), request.client.host if request.client else 'unknown', devpost=devpost_arrival)
         ctx = principal.set(identity)
         try:
             response = await call_next(request)
             if new_cookie:
                 response.set_cookie('pickylens_demo', new_cookie, httponly=True, samesite='strict',
-                                    secure=request.url.scheme=='https', max_age=access.anonymous_hours*3600, path='/')
+                                    secure=request.url.scheme=='https', max_age=(access.devpost_hours if devpost_arrival else access.anonymous_hours)*3600, path='/')
             response.headers['Cache-Control'] = 'no-store'
             return response
         finally:

@@ -54,3 +54,14 @@ This supersedes earlier references to a Web pass gate or shared public History. 
 - [ ] Learner confirms final submission; record submission URL/receipt.
 
 MIT/publication are complete, not pending. Earlier dated sections preserve historical checkpoints. Documentation preparation does not constitute submission or 6-ship completion.
+
+
+## Devpost referral allowance — 2026-10-24
+
+Preferred judging URL: https://pickylens.neovantia.live/?ref=devpost. The normal URL still works without credentials. A new anonymous session arriving via GET /?ref=devpost is tagged as Devpost traffic: 30 calls/session over 72 hours, 6/minute per session and IP, 60/IP over rolling 72 hours. Normal defaults remain 12/session over 24 hours, 6/minute, 30/IP over rolling 24 hours.
+
+Configuration: PICKYLENS_DEVPOST_OPERATIONS, PICKYLENS_DEVPOST_HOURS, PICKYLENS_DEVPOST_PER_MINUTE, PICKYLENS_DEVPOST_IP_OPERATIONS, PICKYLENS_DEVPOST_IP_HOURS; normal IP window uses PICKYLENS_ANONYMOUS_IP_HOURS. Supply process/systemd environment values. Existing valid sessions are never upgraded/reset by a query parameter; classification, used count and absolute expiry persist. Refresh does not renew the cookie. Clearing cookies still encounters the shared IP usage history. IP windows count both anonymous classes rather than independent referral buckets.
+
+The referral is public traffic classification, not authentication. Anonymous tokens never authorize extension routes. Judge Pass expiration/limits remain unchanged. Both anonymous classes and extension calls share the persistent 200-call / 2,000,000-token breakers and fail closed. No UI branding or model behavior changes.
+
+Verification: 104 deterministic tests pass, worker protocol and whitespace checks pass; zero inference calls. This is the explicitly authorized shipping configuration exception, not reopened product development.
