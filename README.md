@@ -20,7 +20,7 @@ The normal public/judge-facing application uses live AI through the configured O
 
 Set `OPENAI_API_KEY` locally outside source control. Open http://127.0.0.1:8000/. Review the consultant scenario, choose the request you approve, send it, read the answer on the right, and choose Check this answer. A fully complete first answer ends successfully. Repair is offered only for genuine gaps; uncertainty remains Needs review and requires the existing explicit approval path. Opening the workspace makes no model calls. Missing live configuration is reported clearly without substituting Replay or a stub.
 
-The normal API rejects internal Replay operations and keeps pre-existing internal records out of the public workspace/History while preserving them in storage. This is product separation, not authentication or multi-user isolation. Use separate databases for internal and controlled public instances.
+The normal API rejects internal Replay operations and keeps pre-existing internal records out of the public workspace/History while preserving them in storage. Anonymous Web records are additionally isolated by browser session. Use separate databases for internal and controlled public instances.
 
 ## Internal Replay diagnostics
 
@@ -61,13 +61,13 @@ No activation script, execution-policy change, Node tooling, or system runtime r
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Tests use temporary SQLite databases and the injected deterministic provider. Credentials, virtual environments, runtime databases, private learner context, and scratch data are ignored by Git. No deployment or submission work is included in this slice.
+Tests use temporary SQLite databases and the injected deterministic provider. Credentials, virtual environments, runtime databases, private learner context, and scratch data are ignored by Git. The frozen application has 97 passing automated tests. Shipping preparation is tracked in devpost/shipping.md.
 
 ## Runtime configuration
 
 Development loads only the project-root `.env`, with normal process environment variables taking precedence. Secrets are masked in configuration representations and never included in browser responses. `.env.example` contains names and safe defaults only. No implicit search in parent directories is performed.
 
-For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. Plan to use systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. The original reverse-proxy-only access plan is superseded by the authorized Judge Pass finalization below. Keep the backend behind the trusted HTTPS proxy; Judge Pass protects Web and extension evaluation. Deployment is now active; see deployment/README.md for the installed service and verification.
+For VESTA, set `PICKYLENS_ENV=production` in the service environment to disable repository dotenv loading. The deployed service uses systemd `EnvironmentFile=/etc/neovantia/secrets/pickylens/runtime.env` with the same variable names and restrictive permissions. Do not place deployment secrets in the checkout. The original reverse-proxy-only access plan is superseded by the authorized Judge Pass finalization below. Keep the backend behind the trusted HTTPS proxy; Judge Pass protects Web and extension evaluation. Deployment is now active; see deployment/README.md for the installed service and verification.
 
 The bounded Slice 2 verification harness is `python -m devtools.live_verify`; it records attempts and usage under ignored `work/live-verification/`, disables SDK retries, and refuses automatic reruns of an existing capture. Never run it without an authorized live-call budget.
 
@@ -116,11 +116,11 @@ Read an existing interaction without model calls:
 
 `devtools.public_live_verify` is a one-attempt, six-call validation harness that uses normal API actions and refuses an existing evidence directory. It requires explicit live-call authorization; do not rerun or remove its evidence directory to obtain another attempt.
 
-## Gemini CLI extension v0.1 — deterministic checkpoint
+## Optional Gemini CLI adapter — historical checkpoint
 
-The separately approved Gemini milestone now has a thin local adapter with BeforeAgent request review, AfterAgent answer review, a technical manual fallback and separate experimental storage. See [extension setup and boundaries](extensions/pickylens/README.md) and [the deterministic checkpoint](devpost/gemini-extension-checkpoint.md). Earlier statements that Gemini had not started describe the completed 5-build milestone. Live Gemini/OpenAI validation is still pending separate approval; 6-ship has not started.
+The separately approved Gemini milestone now has a thin local adapter with BeforeAgent request review, AfterAgent answer review, a technical manual fallback and separate experimental storage. See [extension setup and boundaries](extensions/pickylens/README.md) and [the deterministic checkpoint](devpost/gemini-extension-checkpoint.md). Earlier statements that Gemini had not started describe the completed 5-build milestone. This CLI adapter is secondary; its Google personal-account validation was blocked. The browser extension is the validated Gemini path. See devpost/gemini-live-validation.md and devpost/finalization.md.
 
-## Judge Pass access (finalization candidate)
+## Gemini extension Judge Pass access
 
 The Gemini extension requires a Judge Pass; the normal Web demo automatically receives a bounded anonymous session. An operator creates a bounded code with `.\.venv\Scripts\python.exe -m devtools.issue_judge_pass --operations 30 --hours 72` and shares it privately. This command prints a bearer credential: never put its output in Git, screenshots, logs, or public documents. Extension users enter it in the extension toolbar popup. Web visitors land directly in the live workspace. Anonymous History is scoped to the current browser session; expired or cleared sessions cannot reopen prior records. Use sample work only.
 
@@ -132,7 +132,7 @@ Operator environment variables: `PICKYLENS_ACCESS_DB`, `PICKYLENS_GLOBAL_OPERATI
 
 See `extensions/browser/README.md`. The new candidate uses composer PRE and an explicit Check this answer action; it does not infer automatic POST completion. The old browser spike and CLI adapters remain evidence/optional integrations.
 
-The operator packages one exact deployed HTTPS backend origin using `python -m devtools.package_browser https://YOUR-DEPLOYED-HOST work/pickylens-browser.zip`. Replace the example with the actual verified deployment. The ZIP has no secrets and requests only that backend plus Gemini access. Judges install the ZIP unpacked and enter a Judge Pass; they do not run this packaging command or install developer tools.
+The operator can reproduce a package using `python -m devtools.package_browser https://pickylens.neovantia.live work/pickylens-browser.zip` (destination must not already exist). The ZIP has no secrets and requests only that backend plus Gemini access. Judges install the ZIP unpacked and enter a Judge Pass; they do not run this packaging command or install developer tools.
 
 Privacy: Web interactions and evidence are saved in server SQLite and visible only to their anonymous browser session. Browser reviews are transient in page memory; submitted text is sent to the backend and OpenAI with API storage disabled. Disabling API storage does not promise zero provider retention. The pass ledger stores token hashes, expiration and call reservations, not prompts. Do not use confidential client material in this shared hackathon instance.
 
@@ -151,3 +151,8 @@ Canonical deployment target: https://pickylens.neovantia.live, with API paths on
 The public Web workspace requires no credential. A random HttpOnly SameSite=Strict cookie is issued automatically (Secure over HTTPS). Defaults: 12 provider operations per session / 24 hours, 6 operations per minute per session and IP, 30 per IP per rolling 24 hours. IPs are stored as keyed hashes; clearing cookies does not reset the IP allowance. Limits are configured through PICKYLENS_ANONYMOUS_OPERATIONS, PICKYLENS_ANONYMOUS_HOURS, PICKYLENS_ANONYMOUS_PER_MINUTE and PICKYLENS_ANONYMOUS_IP_OPERATIONS.
 
 Web and extension reservations share the same persistent 200-call and 2,000,000-token global breakers. Exhaustion returns “Public demo allowance reached. Please try again later.” No Replay/stub fallback exists. Requests from other origins are rejected. Only the trusted loopback proxy may supply forwarded client addresses. Anonymous cookies never authorize extension endpoints, which require Bearer Judge Pass authentication. Earlier shared-History descriptions refer to the prior controlled-demo deployment; existing records are preserved but are not exposed to anonymous visitors.
+
+
+## Frozen hackathon release
+
+Runtime baseline: `4ab707b`; no further product changes are planned for this hackathon except submission-blocking defects. Public Web is anonymous and live; the Gemini extension requires a Judge Pass. Both share server-side cost limits. Documentation-only shipping commits may follow without changing the deployed application. See [shipping status](devpost/shipping.md) and [recording preparation](devpost/demo-preparation.md).

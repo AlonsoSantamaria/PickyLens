@@ -4,14 +4,14 @@ Status: in progress. 5-build remains complete; approved planning statuses are un
 
 - Live Web and explicit Gemini browser acceptance passed; six OpenAI calls / 6,723 tokens and one Gemini generation. No remaining inference authorization.
 - VESTA HTTPS access and fail-closed pass checks passed. See deployment/README.md.
-- Release package: work/pickylens-browser-v0.1.zip (canonical HTTPS backend).
-- Final deterministic verification: 92 Python tests, worker protocol and JavaScript syntax checks passed.
-- Prepublication scan: 19 commits / 188 unique blobs, no common credential signatures detected. This is not a guarantee against all private content. Learner profile and .env have no committed history. No remote is configured; proposed AlonsoSantamaria/PickyLens does not exist. Publication and license choice await explicit approval.
+- Public release: https://github.com/AlonsoSantamaria/PickyLens/releases/tag/v0.1.0 (canonical HTTPS backend).
+- Frozen runtime: 4ab707b; 97 Python tests, worker protocol, compilation and whitespace checks passed. No product changes or new inference in this preparation pass.
+- Final privacy audit: 22 commits / 219 unique blobs and the downloaded public extension ZIP; no known credential values, common credential signatures or prohibited runtime/private paths found. Public main, MIT and anonymous repository/Web access verified. Learner profile remains excluded.
 - Video and Devpost submission have not been started, confirmed by learner.
 
 ## Remaining learner-owned shipping steps
 
-- Approve public repository publication and choose an open-source license. Code and included history will be publicly readable; personal learner profile stays excluded.
+- Register for Build With AI: Basics. Learner confirmed registration has not yet occurred; do not infer eligibility or accept terms on their behalf.
 - Record working product, upload accessible video, and supply link.
 - Write project description, required submission answers and learning reflections; complete exit survey.
 - Inspect the authenticated submission form, including Skill Pack use question and age-of-majority confirmation; submit explicitly.
@@ -39,3 +39,18 @@ Web History is restricted to the current anonymous session; expired/cleared sess
 Verification: 97 deterministic tests pass; worker protocol, compilation and whitespace checks pass. VESTA was updated preserving databases, passes and secrets. A fresh browser opened the live workspace directly with Review my request available. Clean HTTPS checks returned 200, blank request validation 422, exhausted anonymous session 429 with the product allowance message, invalid extension pass 401, exhausted extension pass 429. Provider reservation count was unchanged. Zero new inference calls; deployed successful PRE was not rerun because deterministic API tests establish the changed access path and the live provider configuration is unchanged.
 
 This supersedes earlier references to a Web pass gate or shared public History. Existing approved planning status is retained; this is the learner-authorized access amendment. Public repository already existed before this correction; publication was paused until verification passed. 6-ship remains pending video, learner-authored submission, exit survey and submission confirmation.
+
+
+## Final preparation checkpoint
+
+- [x] Public GitHub, MIT, visitor README, approved planning artifacts.
+- [x] Public extension ZIP and normal popup installation instructions; no credentials included.
+- [x] Final history/release audit and anonymous public access checks.
+- [x] Recording shot list, asset inventory and final submission checklist in demo-preparation.md.
+- [ ] Learner registration, including personal registration answers and any entry survey actually presented.
+- [ ] Inspect authenticated submission form and locate its exit-survey prompts.
+- [ ] Learner records/uploads video; anonymous playback verified.
+- [ ] Learner writes description, Skill Pack explanation and required form/survey answers.
+- [ ] Learner confirms final submission; record submission URL/receipt.
+
+MIT/publication are complete, not pending. Earlier dated sections preserve historical checkpoints. Documentation preparation does not constitute submission or 6-ship completion.
