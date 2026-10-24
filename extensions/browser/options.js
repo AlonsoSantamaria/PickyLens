@@ -1,3 +1,5 @@
-chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
-document.getElementById('save').onclick=async()=>{const value=document.getElementById('pass').value.trim();if(value.length<30){document.getElementById('status').textContent='Enter a valid Judge Pass.';return;}await chrome.storage.local.set({judgePass:value});document.getElementById('pass').value='';document.getElementById('status').textContent='Pass saved. Return to Gemini.';};
-document.getElementById('clear').onclick=async()=>{await chrome.storage.local.remove('judgePass');document.getElementById('status').textContent='Pass removed.';};
+const status=document.getElementById('status');
+const ready=chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
+ready.then(()=>chrome.storage.local.get('judgePass')).then(data=>{status.textContent=data.judgePass?'A Judge Pass is saved in this browser.':'Enter your local validation pass below.';}).catch(()=>{status.textContent='Could not read settings. Reload the extension and try again.';});
+document.getElementById('save').onclick=async()=>{try{await ready;const value=document.getElementById('pass').value.trim();if(value.length<30){status.textContent='Enter a valid Judge Pass.';return;}await chrome.storage.local.set({judgePass:value});document.getElementById('pass').value='';status.textContent='Pass saved. Return to Gemini.';}catch{status.textContent='Could not save the pass. Reload the extension and try again.';}};
+document.getElementById('clear').onclick=async()=>{try{await ready;await chrome.storage.local.remove('judgePass');status.textContent='Pass removed.';}catch{status.textContent='Could not remove the pass. Try again.';}};

@@ -5,7 +5,7 @@ This is the new extension, not devtools/browser_spike. Disable the old feasibili
 ## Judge installation (operator-supplied HTTPS package)
 1. Extract the supplied PickyLens ZIP into a permanent folder.
 2. Open chrome://extensions (or edge://extensions), enable Developer mode, select Load unpacked, and select that folder.
-3. Open PickyLens extension options and enter the bounded Judge Pass supplied by the operator. Never enter an OpenAI key.
+3. Click the Chrome Extensions puzzle-piece menu, then PickyLens, to open its Judge Pass popup. Enter the bounded Judge Pass supplied by the operator. Never enter an OpenAI key.
 4. Open normal gemini.google.com using your own Google account. Refresh any already-open Gemini tab.
 5. Write normally. Review your request, explicitly choose any edits, or Send original anyway.
 6. Once Gemini finishes, click Check this answer beside that answer. Review findings and evidence. Fix only what's missing creates a draft; placing it in the composer does not send it.

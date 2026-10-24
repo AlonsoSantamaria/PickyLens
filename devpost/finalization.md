@@ -52,3 +52,23 @@ Global cumulative token limit added: PICKYLENS_GLOBAL_TOKEN_BUDGET defaults to 2
 Browser acceptance is waiting for manual extension installation: current Gemini page still displays the old feasibility probe. No production extension review or Gemini generation was attempted. Disable old probe, load extensions/browser, enter the private local validation pass in extension options, and refresh Gemini. No further live authorization is required within the remaining allowance.
 
 VESTA deployment, public checks, deployed extension ZIP and 6-ship remain pending until browser acceptance passes.
+
+## Gemini live acceptance — 2026-10-23
+
+Production candidate loaded in the user Chrome profile after the requested visual refinements. Composer PRE returned Ready. Send original anyway delivered the exact unchanged request. One normal Gemini generation completed. The user-facing explicit Check answer action triggered extraction and POST; all five requirements were Complete. Expanding the recommendation showed an exact excerpt from the correct Gemini response. No automatic POST, retry, regeneration or repair call was made.
+
+Conversation: https://gemini.google.com/app/c0bf54bc935a7fd6. Matching request/answer container: 83508d27df297f30. Result panel was directly adjacent to that model-response. Google displayed Gemini Automatic; exact underlying model and token usage were not exposed in the UI and are not inferred.
+
+| Call | Purpose | Model | Effort | Input | Output | Reasoning (included) | Total | ms |
+|---|---|---|---|---:|---:|---:|---:|---:|
+| 4 | pre | gpt-5.6-sol | low | 376 | 269 | 0 | 645 | 5071.44 |
+| 5 | pre | gpt-5.6-sol | low | 376 | 260 | 0 | 636 | 4527.58 |
+| 6 | post | gpt-5.6-sol | low | 1219 | 1094 | 49 | 2313 | 11587.85 |
+
+Extension: 3 OpenAI calls, 3,594 tokens, 49 reasoning tokens included, 21,186.87ms. Combined Web+extension: 6 OpenAI calls, 6,723 tokens (3,637 input + 3,086 output), 111 reasoning tokens included, 38,479.11ms. Authorization exhausted; no further inference permitted without approval.
+
+Live backend denial checks: invalid bearer returned 401; exhausted valid pass returned 429 with the allowance message; ledger remained six calls before and after. Credential scan confirmed the actual configured provider key is absent from every extension file. Only the bounded Judge Pass is held by extension trusted storage and sent as authorization.
+
+Options are now exposed both as a normal toolbar popup and an options_ui page; no manual DevTools/storage configuration. Small controls share CSS glasses, subtle hover, visible focus and 5px icon/text spacing. Visual identity rule recorded separately.
+
+Final outstanding acceptance item: user must disable the extension and refresh Gemini so clean host restoration can be inspected. Chrome extension management cannot be automated through the available browser surface. Until this check completes, deployment and 6-ship remain pending. Core Gemini interaction passed; final readiness is conditional on cleanup.

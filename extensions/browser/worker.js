@@ -1,7 +1,6 @@
 // Packaging replaces this with the exact HTTPS deployment origin; never arbitrary URLs.
 const BACKEND = 'http://127.0.0.1:8000';
 chrome.storage.local.setAccessLevel({accessLevel:'TRUSTED_CONTEXTS'});
-chrome.action.onClicked.addListener(()=>chrome.runtime.openOptionsPage());
 chrome.runtime.onMessage.addListener((m,s,reply)=>{
  if(s.id!==chrome.runtime.id||!s.url?.startsWith('https://gemini.google.com/')||!['pre','post','next'].includes(m?.action)||!m.body||JSON.stringify(m.body).length>65000)return false;
  (async()=>{
