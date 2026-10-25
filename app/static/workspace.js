@@ -9,7 +9,7 @@ const mode=document.getElementById("mode");
 if(state)mode.value=state.mode;
 mode.onchange=()=>{if(state){const ok=!state.answer||confirm("Switch mode? Current answer and downstream reviews become superseded in History.");if(ok)call("mode",{mode:mode.value,confirmed_switch:true});else mode.value=state.mode;}};
 const labels = {complete:"Complete",partial:"Partial",missing:"Missing",needs_review:"Needs review"};
-function node(tag, text, cls) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(cls)n.className=cls; return n; }
+function node(tag, text, cls) { const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(cls)n.className=cls; if(tag==="pre"){n.classList.add("content-scroll");n.setAttribute("aria-label","Request text");} return n; }
 function button(text, fn, secondary=false) { const b=node("button",text,secondary?"secondary":""); b.onclick=fn; b.disabled=busy; return b; }
 async function call(action, extra={}) {
   if(busy) return;
@@ -59,6 +59,8 @@ function counts(review, prefix="") {
   panel.append(box);
 }
 function assessments(review) {
+  const list=node("div",undefined,"assessment-list content-scroll");
+  list.setAttribute("aria-label",review.phase==="verify"?"Verification requirements and evidence":"Answer requirements and evidence");
   for(const a of review.assessments) {
     const row=node("details",undefined,"requirement"), summary=node("summary");
     summary.append(node("strong",labels[a.status]+" \xb7 ",a.status),document.createTextNode(a.requirement_text));row.append(summary);
@@ -67,8 +69,9 @@ function assessments(review) {
     row.append(node("p",a.explanation));
     if(a.uncertainty_reason)row.append(node("p",a.uncertainty_reason));
     a.evidence.forEach(e=>{row.append(node("blockquote",e.excerpt),node("small",`${e.location} \xb7 ${e.response_id===state.followup_answer?.response_id?"Follow-up response":"First response"}`));});
-    panel.append(row);
+    list.append(row);
   }
+  panel.append(list);
 }
 function showPRE() {
   const p=state.pre;
@@ -76,7 +79,9 @@ function showPRE() {
   const meanings={green:"Ready to send.",amber:"Usable, but worth improving.",red:"Important issue before sending."};
   panel.append(node("h3","PickyLens reviewed your request"));
   panel.append(node("span",meanings[p.readiness],"readiness "+p.readiness));
-  p.findings.forEach(f=>{const item=node("div",undefined,"finding");item.append(node("strong",f.title),node("p",f.explanation));panel.append(item);});
+  const findings=node("div",undefined,"content-scroll findings-list");findings.setAttribute("aria-label","Request review findings");
+  p.findings.forEach(f=>{const item=node("div",undefined,"finding");item.append(node("strong",f.title),node("p",f.explanation));findings.append(item);});
+  if(p.findings.length)panel.append(findings);
   const controls={};
   p.clarifications.forEach(c=>{
     const label=node("label",c.question), select=node(c.options.length?"select":"input");select.id="clarification-"+c.key;label.htmlFor=select.id;
@@ -97,7 +102,7 @@ function showPRE() {
     panel.append(button("Reset to canonical scenario and review",()=>call("reset-scenario"),true));
   }
   panel.append(node("h2","Requirements you are approving"));
-  const list=node("ul",undefined,"intent-list");p.requirements.forEach(r=>list.append(node("li",r.text)));
+  const list=node("ul",undefined,"intent-list content-scroll");p.requirements.forEach(r=>list.append(node("li",r.text)));
   Object.entries(state.accepted_clarifications).forEach(([k,v])=>list.append(node("li",`Improved prompt only \u2014 Accepted ${k}: ${v}`)));
   panel.append(list,node("p","Using a prompt approves these requirements for checking the answer and verifying repairs. Sending the original excludes unaccepted PRE suggestions.","muted small"));
   const improvedAction=button("Use improved request",()=>call("approve-intent",{choice:"improved"}),mode.value==="replay");
@@ -152,8 +157,8 @@ function render() {
   document.getElementById("answer-heading").textContent=stage==="post"?"AI answer ready":"AI answer";
   document.getElementById("answer-side").classList.toggle("reading-active",stage==="post");
   if(!state){panel=document.getElementById("request-review");panel.append(node("p",request.value.trim()?"PickyLens checks your request. You choose which suggestions to accept.":"Enter a request to begin.","muted small"));return;}
-  if(state.answer){document.getElementById("answer").textContent=state.answer.text;document.querySelector(".answer-label").textContent=state.answer.metadata.acquisition==="replay"?"Genuine captured response · replayed unchanged":state.test_stub?"Synthetic test response":"AI answer";}
-  if(state.followup_answer)document.getElementById("followup").textContent=state.followup_answer.text;
+  if(state.answer){PickyLensMarkdown.render(document.getElementById("answer"),state.answer.text);document.querySelector(".answer-label").textContent=state.answer.metadata.acquisition==="replay"?"Genuine captured response · replayed unchanged":state.test_stub?"Synthetic test response":"AI answer";}
+  if(state.followup_answer)PickyLensMarkdown.render(document.getElementById("followup"),state.followup_answer.text);
   const recovery=document.getElementById("recovery"), tools=document.getElementById("request-tools");
   if(paused){recovery.append(node("p","This interaction is paused. Completed work is saved."),button("Resume interaction",()=>call("resume")));}
   else if(!terminal){
@@ -164,7 +169,7 @@ function render() {
     },true));
     if(editingRequest)tools.append(node("p","Changing your request starts a new review. Earlier results stay in History as superseded evidence.","muted small"));
   }
-  if(state.intent){const approved=node("details",undefined,"approved-request");approved.append(node("summary","Approved request and requirements"),node("pre",state.selected_prompt));const list=node("ul");state.intent.requirements.forEach(r=>list.append(node("li",r.text)));approved.append(list);document.getElementById("request-review").append(approved);}
+  if(state.intent){const approved=node("details",undefined,"approved-request");approved.append(node("summary","Approved request and requirements"),node("pre",state.selected_prompt));const list=node("ul",undefined,"intent-list content-scroll");state.intent.requirements.forEach(r=>list.append(node("li",r.text)));approved.append(list);document.getElementById("request-review").append(approved);}
   if(state.pending_operation)recovery.append(node("p","Work is in progress. Your completed steps are saved."),button("Refresh saved state",async()=>{state=await(await fetch(`/api/interactions/${state.interaction_id}`)).json();render();},true));
   if(state.failure)recovery.append(node("p",state.failure),button("Retry failed step",()=>call("retry")));
   if(replayRejected)recovery.append(button("Reset to demo request and review",()=>call("reset-scenario")),button("Remain in Live Model",()=>{replayRejected=false;render();},true));
@@ -184,7 +189,7 @@ function render() {
   if(state.next){
     panel=document.getElementById("repair-panel");
     panel.append(node("p","Ask only for the missing or incomplete work. Review or edit this before sending.","muted small"));
-    const draft=node("textarea");draft.id="followup-draft";draft.rows=6;draft.value=state.followup_draft;draft.setAttribute("aria-label","Follow-up prompt");draft.readOnly=stage!=="next"||paused||!!state.pending_operation;panel.append(draft);
+    const draft=node("textarea");draft.id="followup-draft";draft.rows=6;draft.value=state.followup_draft;draft.setAttribute("aria-label","Follow-up prompt");draft.oninput=()=>fitEditor(draft);draft.readOnly=stage!=="next"||paused||!!state.pending_operation;panel.append(draft);
     if(stage==="next"&&!paused&&!state.pending_operation){
       draft.onblur=()=>setTimeout(()=>{if(!busy&&document.activeElement?.tagName!=="BUTTON"&&draft.value.trim()&&draft.value!==state.followup_draft)call("followup-draft",{prompt:draft.value});},0);
       if(!state.failure)panel.append(button("Send follow-up",async()=>{if(draft.value!==state.followup_draft){await call("followup-draft",{prompt:draft.value});if(state.followup_draft!==draft.value)return;}await call("followup");}));
@@ -213,5 +218,29 @@ function render() {
 }
 
 document.getElementById("start").onclick=()=>call("pre",{request_text:request.value,mode:mode.value,canonical_scenario:!!demo&&canonical&&!mode.disabled});
-request.oninput=()=>{canonical=false;if(!state)render();};
+request.oninput=()=>{fitEditor(request);canonical=false;if(!state)render();};
 render();
+
+
+// Only overflowing content is a keyboard stop. Native scroll chaining stays enabled.
+function fitEditor(editor){
+  editor.style.height="0px";
+  editor.style.height=`${editor.scrollHeight+2}px`;
+}
+function updateContentPanels(){
+  document.querySelectorAll(".workbench textarea").forEach(fitEditor);
+  document.querySelectorAll(".workbench .content-scroll, .workbench .table-scroll").forEach(area=>{
+    const scrolls=area.clientHeight>0 && (area.scrollHeight>area.clientHeight+1 || area.scrollWidth>area.clientWidth+1);
+    if(scrolls){
+      area.tabIndex=0;area.setAttribute("role","region");
+      if(!area.hasAttribute("aria-label"))area.setAttribute("aria-label","Requirements");
+    }else{area.removeAttribute("tabindex");area.removeAttribute("role");}
+  });
+}
+let contentFrame;
+function scheduleContentPanels(){cancelAnimationFrame(contentFrame);contentFrame=requestAnimationFrame(updateContentPanels);}
+new MutationObserver(scheduleContentPanels).observe(document.querySelector(".workbench"),{childList:true,subtree:true,characterData:true});
+new ResizeObserver(scheduleContentPanels).observe(document.querySelector(".workbench"));
+document.querySelector(".workbench").addEventListener("toggle",scheduleContentPanels,true);
+window.addEventListener("resize",scheduleContentPanels);
+scheduleContentPanels();
