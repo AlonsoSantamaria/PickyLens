@@ -39,3 +39,9 @@ Configuration: PICKYLENS_DEVPOST_OPERATIONS, PICKYLENS_DEVPOST_HOURS, PICKYLENS_
 The referral is public traffic classification, not authentication. Anonymous tokens never authorize extension routes. Judge Pass expiration/limits remain unchanged. Both anonymous classes and extension calls share the persistent 200-call / 2,000,000-token breakers and fail closed. No UI branding or model behavior changes.
 
 Verification: 104 deterministic tests pass, worker protocol and whitespace checks pass; zero inference calls. This is the explicitly authorized shipping configuration exception, not reopened product development.
+
+## UX polish deployment — 2026-10-25 11:38 CST (UTC-06:00)
+
+Deployed `b107b17` from `main`: UX bounded-scroll + Markdown rendering polish. Previous production commit: `a145513`; rollback archive preserved at `/srv/neovantia/apps/pickylens/rollback-a145513-before-b107b17.tar`. Only PickyLens was restarted; configuration, secrets, SQLite data, allowances, Judge Pass, provider routing and service topology were preserved.
+
+Health: service active; loopback and public HTTPS return 200; deployed app matches the commit (archive line endings normalized). Browser smoke passed at desktop and 390px: prompt/answer internal scrolling, headings, emphasis, lists, rendered table, table-only horizontal overflow, summary counters outside scrolling requirement lists, and expanded evidence. Public landing page checked directly; populated-state rendering used production HTML/HTTPS assets in an isolated deterministic harness without production data edits. Zero provider calls; no production-only issue observed.
