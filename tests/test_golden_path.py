@@ -167,8 +167,14 @@ def test_invalid_evidence_or_coverage_rejected(setup, corruption):
             else:
                 result.assessments[0].requirement_text = "Redefined intent"
             return result
-    with pytest.raises(ValueError):
-        asyncio.run(evaluate(Corrupt(), snapshot.intent, [snapshot.answer], "post"))
+    result = asyncio.run(evaluate(Corrupt(), snapshot.intent, [snapshot.answer], "post"))
+    assert len(result.assessments) == len(snapshot.intent.requirements)
+    if corruption == "identity":
+        assert result.assessments[0].requirement_text == snapshot.intent.requirements[0].text
+    else:
+        affected = result.assessments[-1 if corruption == "coverage" else 0]
+        assert affected.status == Status.needs_review
+    assert result.diagnostics
 
 
 def test_next_excludes_unapproved_uncertainty_and_complete_targets(setup):

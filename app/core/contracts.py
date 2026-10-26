@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import StrEnum
+from typing import Literal
 from uuid import uuid4
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -14,6 +15,16 @@ def now():
 
 class Contract(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+
+class FailureDiagnostic(Contract):
+    failure_layer: Literal["provider_envelope", "structured_parse", "semantic_validation", "persistence", "access"]
+    stage: str
+    validation_code: str
+    field_path: list[str | int] = Field(default_factory=list)
+    requirement_id: str | None = None
+    response_id: str | None = None
+    call_id: str | None = None
 
 
 class Status(StrEnum):
@@ -90,6 +101,7 @@ class Assessment(Contract):
 
 
 class Evaluation(Contract):
+    diagnostics: list[FailureDiagnostic] = Field(default_factory=list)
     intent_version: int
     phase: str
     assessments: list[Assessment]
@@ -104,6 +116,7 @@ class NextProposal(Contract):
 
 
 class ModelCall(Contract):
+    diagnostics: list[FailureDiagnostic] = Field(default_factory=list)
     call_id: str = Field(default_factory=uid)
     operation_id: str | None = None
     provider: str
@@ -121,6 +134,7 @@ class ModelCall(Contract):
 
 
 class Snapshot(Contract):
+    diagnostics: list[FailureDiagnostic] = Field(default_factory=list)
     model_calls: list[ModelCall] = Field(default_factory=list)
     pending_operation: str | None = None
     pending_action: str | None = None

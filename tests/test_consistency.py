@@ -38,10 +38,12 @@ def test_apparent_conflict_with_unknown_scope_needs_review():
 
 
 def test_fabricated_conflict_evidence_is_rejected():
-    with pytest.raises(ValueError, match="Evidence is not present"):
-        run_assessment(("Cost is 30.", "Cost is 60."), "confirmed", True)
+    result = run_assessment(("Cost is 30.", "Cost is 60."), "confirmed", True)
+    assert result.status == Status.needs_review
+    assert not result.consistency_findings
+    assert all(e.excerpt != "This quotation does not exist." for e in result.evidence)
 
 
 def test_confirmed_conflict_requires_two_distinct_claims():
-    with pytest.raises(ValueError, match="both conflicting claims"):
-        run_assessment(("Cost is 30.", "Cost is 30."), "confirmed")
+    result = run_assessment(("Cost is 30.", "Cost is 30."), "confirmed")
+    assert result.status == Status.needs_review and not result.consistency_findings

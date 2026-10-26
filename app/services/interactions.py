@@ -8,6 +8,7 @@ from app.core.contracts import Snapshot, Status, ApprovedIntent, Requirement
 from app.services.replay import load_fixture, acquire
 from app.storage.repository import Conflict
 from app.providers.telemetry import calls
+from app.core.failures import failure_diagnostic
 
 
 class StageFailure(ValueError):
@@ -247,6 +248,11 @@ class Interactions:
                 if not s.followup_answer.text.strip():
                     raise ValueError("Empty follow-up answer")
                 s.stage, event = "verify", "followup_sent"
+            if name in {"post", "verify", "resolve"}:
+                for diagnostic in result.diagnostics:
+                    if records:
+                        diagnostic.call_id, diagnostic.response_id = records[-1].call_id, records[-1].response_id
+                    s.diagnostics.append(diagnostic.model_copy(deep=True))
             s.failure = s.failed_action = None
             s.recovered = s.recovered or was_failure
             if not s.terminal:
@@ -254,6 +260,7 @@ class Interactions:
         except Exception as exc:
             status_code = 429 if isinstance(exc, AccessDenied) else (504 if isinstance(exc, TimeoutError) else 502)
             s = before
+            s.diagnostics.append(failure_diagnostic(exc, name, records))
             label = {"answer":"AI response", "followup":"Follow-up request", "resolve":"Uncertainty review"}.get(name, name.upper())
             s.failure = str(exc) if isinstance(exc, AccessDenied) else f"{label} could not be completed. Completed work is saved."
             s.failed_action = name

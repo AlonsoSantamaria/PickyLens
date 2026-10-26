@@ -1,6 +1,7 @@
 import sqlite3
+import logging
 from pathlib import Path
-from app.core.contracts import Snapshot, EventPayload, uid, now
+from app.core.contracts import Snapshot, EventPayload, uid, now, FailureDiagnostic
 
 
 class Conflict(ValueError):
@@ -81,6 +82,15 @@ class Repository:
             except Conflict:
                 if attempt == 4:
                     raise
+            except sqlite3.DatabaseError:
+                diagnostic = FailureDiagnostic(failure_layer="persistence", stage=result.pending_action or result.stage,
+                    validation_code="snapshot_event_transaction_failed",
+                    response_id=result.model_calls[-1].response_id if result.model_calls else None,
+                    call_id=result.model_calls[-1].call_id if result.model_calls else None)
+                # If SQLite is unavailable, the service journal is the durable diagnostic
+                # sink. The prior pending snapshot survives for explicit recovery.
+                logging.getLogger(__name__).error("PickyLens persistence failure: %s", diagnostic.model_dump_json())
+                raise
 
     def _finish(self, result, operation_id, event_type):
         # The operation token survives trace-only revision changes, but not supersession.

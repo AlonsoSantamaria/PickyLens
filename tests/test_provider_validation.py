@@ -21,7 +21,7 @@ def response(text, status='completed'):
 def test_structured_response_retains_usage_and_never_retries(tmp_path,caplog,case):
     async def run():
         provider=OpenAIProvider(load_settings(tmp_path,{'OPENAI_API_KEY':'test-only'}))
-        valid=dict(readiness='green',findings=[],clarifications=[],requirements=[dict(requirement_id='r1',text='Compare options',source='original_request')],improved_prompt='Compare options')
+        valid=dict(readiness='green',findings=[],clarifications=[],requirements=['Compare options'],improved_prompt='Compare options')
         text=json.dumps(valid) if case=='valid' else '{"private-input":"DO-NOT-LOG"}'
         r=response(text,'incomplete' if case=='truncated' else 'completed')
         if case=='refusal': r.output=[]
@@ -42,7 +42,7 @@ def test_structured_response_retains_usage_and_never_retries(tmp_path,caplog,cas
             assert bucket[0].response_id=='resp-test'
             if case=='invalid':
                 assert bucket[0].error_type=='ValidationError'
-                assert 'readiness' in caplog.text and 'missing' in caplog.text
+                assert 'structured_schema_invalid' in caplog.text
             if case=='truncated': assert bucket[0].error_type=='IncompleteResponse'
             if case=='refusal': assert bucket[0].error_type=='MissingStructuredResult'
             assert 'DO-NOT-LOG' not in caplog.text and 'private-input' not in caplog.text

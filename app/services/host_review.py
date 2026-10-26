@@ -4,6 +4,7 @@ from app.core import pre, evaluation
 from app.core import next as next_stage
 from app.core.contracts import ApprovedIntent, Answer, Snapshot, uid
 from app.providers.telemetry import calls
+from app.core.failures import failure_diagnostic
 
 
 class HostReview:
@@ -20,8 +21,15 @@ class HostReview:
         token = calls.set(bucket)
         try:
             await asyncio.wait_for(perform(snapshot), timeout=self.timeout)
+            review = snapshot.post if action == "post" else None
+            if review:
+                for diagnostic in review.diagnostics:
+                    if bucket: diagnostic.call_id, diagnostic.response_id = bucket[-1].call_id, bucket[-1].response_id
+                    snapshot.diagnostics.append(diagnostic.model_copy(deep=True))
+            snapshot.failed_action = None
             event = action + "_completed"
-        except (Exception, asyncio.CancelledError):
+        except (Exception, asyncio.CancelledError) as exc:
+            snapshot.diagnostics.append(failure_diagnostic(exc,action,bucket))
             snapshot.failure = "Review unavailable. Saved work is preserved; retry manually."
             snapshot.failed_action = action
             snapshot.lifecycle_status = "Review unavailable"
